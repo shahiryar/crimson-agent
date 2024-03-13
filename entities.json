@@ -1,0 +1,17 @@
+{"tier": {"values": ["gold", "silver", "platinum"],
+          "given": "values",
+          "reprompt": ["What tier would you like to subscribe to: we have Gold, Silver, and Platinum"],
+          "fallback_prompt": ["I am sorry, I can only handle either of these tiers: gold, silver, or platinum"]},
+"pin":{"values":"(?<!\\d)\\d{4}(?!\\d)",
+        "given": "regex",
+        "reprompt": ["Enter a 4 digits long PIN code"],
+        "fallback_prompt": ["Please make sure your PIN is exactly 4 digits long"]},
+"name":{"values": "PERSON",
+        "given": "nlp",
+        "reprompt": ["What is your name?"],
+        "fallback_prompt": ["Sorry. I didn't get it, come again."]},
+"phone":{"values":"\\d+",
+          "given":"regex",
+          "reprompt": ["What is your phone number?"],
+          "fallback_prompt": ["your phone number can only be numeric. Please try again"]}
+}
