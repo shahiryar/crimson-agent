@@ -70,6 +70,6 @@ def load_data():
     st.session_state["held_fulfilment"] = None
 
 @st.cache_resource
-def load_model():
+def load_intent_classifier():
     from transformers import pipeline
-    return pipeline("sentiment-analysis", model="shahiryar/crimson-agent")
+    return pipeline("text-classification", model="shahiryar/crimson-agent")

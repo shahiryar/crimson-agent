@@ -5,7 +5,7 @@ from utils import *
 
 
 load_data()
-classifier = load_model()
+intents_classifier = load_intent_classifier()
 print("\n\n-----------------Rendering--------------")
 print("Current Status at Start ")
 print("Active Intent : ", st.session_state.active_intent) #metadata
@@ -13,17 +13,17 @@ print("Active Context : ", st.session_state.active_context) #metadata
 print("Required Context : ", st.session_state.required_context) #metadata
 print("Active Topic : ", st.session_state.active_topic)
 
-user_input = st.chat_input("Your Message", key="1234")
+user_input = st.chat_input("Your Message", key="1234") #TODO generate clock bound random key instead
 
 print("User input taken : ", user_input)
-
+    
 
 
 if user_input and not st.session_state.active_topic: 
     print("User Input : ", user_input, " and NO active topic ")
     
 
-    current_intent = classifier(str(user_input))[0]["label"]
+    current_intent = intents_classifier(str(user_input))[0]["label"]
     intent_obj = st.session_state.intents[current_intent]
     reply = random.choice(intent_obj["responses"])
     st.session_state["active_intent"] = current_intent
