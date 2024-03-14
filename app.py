@@ -33,7 +33,8 @@ if user_input and not st.session_state.active_topic:
         print("Intent needs Context")
         st.session_state.required_context = intent_obj["params"]
         st.session_state.active_topic = st.session_state.required_context[0] if len(st.session_state.required_context) else None
-        if not len(st.session_state.required_context[0]): del st.session_state.required_context[0]
+        if len(st.session_state.required_context):
+            del st.session_state.required_context[0]
         st.session_state.messages.append(str(user_input))
         user_input = None
         reply = "Alright, I will need some information to do this.\n"
@@ -62,8 +63,9 @@ if user_input and st.session_state.active_topic:
     entity_obj = st.session_state.entities[st.session_state.active_topic]
 
     entity_parameter = extract_entity(entity_obj["given"], entity_obj["values"], str(user_input))
-    if not extract_entity:
-        if st.session_state.fallback_count <3:     
+    print()
+    if not entity_parameter:
+        if st.session_state.fallback_count <2:     
             print("Appending Fallback Prompt for topic : ", st.session_state.active_topic )
             st.session_state.messages.append(random.choice(entity_obj["fallback_prompt"]))
             print("Context and Active Topic Remained the same")
@@ -75,9 +77,13 @@ if user_input and st.session_state.active_topic:
             st.session_state.messages.append(reply)
     else:
         st.session_state.active_context[st.session_state.active_topic] = entity_parameter
-
+        print(f"Param {st.session_state.active_context} added to the Context")
+        print(f"Updating active topic")
         st.session_state.active_topic = st.session_state.required_context[0] if len(st.session_state.required_context) else None
-        if not len(st.session_state.required_context[0]): del st.session_state.required_context[0]
+        print(f"Action Topic is now {st.session_state.active_topic}")
+        if len(st.session_state.required_context):
+            del st.session_state.required_context[0]
+
         if st.session_state.active_topic:
             print("Appending Re-Prompt for topic : ", st.session_state.active_topic )
             entity_obj = st.session_state.entities[st.session_state.active_topic]
