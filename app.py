@@ -6,6 +6,8 @@ from utils import *
 
 load_data()
 intents_classifier = load_intent_classifier()
+sentiment_analyser = load_sentiment_analyser()
+
 print("\n\n-----------------Rendering--------------")
 print("Current Status at Start ")
 print("Active Intent : ", st.session_state.active_intent) #metadata
@@ -16,6 +18,12 @@ print("Active Topic : ", st.session_state.active_topic)
 user_input = st.chat_input("Your Message", key="1234") #TODO generate clock bound random key instead
 
 print("User input taken : ", user_input)
+if user_input:
+    customer_sentiment = sentiment_analyser(user_input)[0]
+    st.session_state.customer_mood = customer_sentiment["label"]
+    st.session_state.cutomer_mood_score = round(customer_sentiment["score"],2)
+
+    print("Customer Mood Score: ", st.session_state.customer_mood_score)
     
 
 
@@ -100,6 +108,8 @@ if st.session_state.active_intent:
 
 
 st.write("Active Intent : ", st.session_state.active_intent) #metadata
+
+st.write("Customer Mood : ", st.session_state.customer_mood, " ", {"NEGATIVE": '🤬', "NEUTRAL": '😒', "POSITIVE": '😍'}[st.session_state.customer_mood])
 #st.write("Active Context : ", st.session_state.active_context) #metadata
 #st.write("Required Context : ", st.session_state.required_context) #metadata
 #st.write("Active Topic : ", st.session_state.active_topic)

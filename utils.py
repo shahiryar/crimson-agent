@@ -56,11 +56,6 @@ import json
 
 @st.cache_data
 def load_data():
-    with open("./entities.json") as file:
-        st.session_state["entities"] = json.load(file)
-    with open("./intents.json") as file:
-        st.session_state["intents"] = json.load(file)
-    
     st.session_state["messages"] = []
     st.session_state["active_intent"] = None
     st.session_state["active_context"] = {}
@@ -68,8 +63,20 @@ def load_data():
     st.session_state["active_topic"] = None
     st.session_state["fallback_count"] = 0
     st.session_state["held_fulfilment"] = None
+    st.session_state["customer_mood_score"] = 0.0
+    st.session_state["customer_mood"] = 'NEUTRAL'
+
+    with open("./entities.json") as file:
+        st.session_state["entities"] = json.load(file)
+    with open("./intents.json") as file:
+        st.session_state["intents"] = json.load(file)
 
 @st.cache_resource
 def load_intent_classifier():
     from transformers import pipeline
     return pipeline("text-classification", model="shahiryar/crimson-agent")
+
+@st.cache_resource
+def load_sentiment_analyser():
+  from transformers import pipeline
+  return pipeline("sentiment-analysis")
