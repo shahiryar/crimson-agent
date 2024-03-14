@@ -2,7 +2,7 @@
 # TODOs
 - [X] Intent Classification
 - [x] Follow up entity reprompt
-- [ ] Sentiment Analysis
+- [X] Sentiment Analysis
 - [ ] Configurations Page to add new Intents and Entities
 - [ ] Configurations Page to add new agents
 - [ ] Handle multiple Sessions
