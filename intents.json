@@ -23,5 +23,9 @@
 "exit-intent": {"training_phrases": ["Bye", "Good Bye", "No thank you!", "End the chat", "No that's it"],
                 "reponses": ["Thank you for using our service, Bye!", "I am grateful that you used our service. Take Care."],
                 "params": "None",
-                "trainable": true}
+                "trainable": true},
+"no-match-intent": {"training_phrases": [],
+                    "reponses": [],
+                    "params": "None",
+                    "trainable": false}
 }
