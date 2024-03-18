@@ -52,24 +52,7 @@ def get_missing_context(active_intent: dict, keys: list) -> list:
   return [key for key in keys if key not in active_intent]
 
 import streamlit as st
-import json
 
-@st.cache_data
-def load_data():
-    st.session_state["messages"] = []
-    st.session_state["active_intent"] = None
-    st.session_state["active_context"] = {}
-    st.session_state["required_context"] = []
-    st.session_state["active_topic"] = None
-    st.session_state["fallback_count"] = 0
-    st.session_state["held_fulfilment"] = None
-    st.session_state["customer_mood_score"] = 0.0
-    st.session_state["customer_mood"] = 'NEUTRAL'
-
-    with open("./entities.json") as file:
-        st.session_state["entities"] = json.load(file)
-    with open("./intents.json") as file:
-        st.session_state["intents"] = json.load(file)
 
 @st.cache_resource
 def load_intent_classifier():
