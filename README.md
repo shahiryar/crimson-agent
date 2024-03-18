@@ -10,7 +10,9 @@
 - [ ] Configurations Page to add new Intents and Entities
 - [ ] Configurations Page to add new agents
 - [ ] Train and Retrain Script
-- [ ] Handle multiple Sessions
 - [ ] Redirect conversation amdist of active context
+- [ ] Handle Input and Output contexts for Intents
 - [ ] Implement open-source LLM to generate Natural Language Responses
+- [ ] Handle multiple Sessions
+- [ ] Communication Channels Integration
 - [ ] Enable Webhook Integrations
