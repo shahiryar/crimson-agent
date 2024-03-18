@@ -8,7 +8,7 @@
 
 ## Week 1: Make Robust
 - [ ] Expand and make rebust the rentity reprompts
-- [ ] Add No-Match Intent (threshold based)
+- [X] Add No-Match Intent (threshold based)
 - [ ] Redirect conversation amdist of active context
 - [ ] Handle Input and Output contexts for Intents
 - [ ] Modulate the code for reusablity
