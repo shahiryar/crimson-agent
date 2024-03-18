@@ -25,7 +25,7 @@
                 "params": "None",
                 "trainable": true},
 "no-match-intent": {"training_phrases": [],
-                    "reponses": [],
+                    "reponses": ["I am sorry, I can only help you with managing your subscription or give information about our service tiers."],
                     "params": "None",
                     "trainable": false}
 }
