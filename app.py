@@ -9,6 +9,7 @@ import json
 def load_data():
     st.session_state["messages"] = []
     st.session_state["active_intent"] = None
+    st.session_state["active_intent_confidence_score"] = 1.0
     st.session_state["active_context"] = {}
     st.session_state["required_context"] = []
     st.session_state["active_topic"] = None
@@ -17,15 +18,23 @@ def load_data():
     st.session_state["customer_mood_score"] = 0.0
     st.session_state["customer_mood"] = 'NEUTRAL'
 
+
     with open("./entities.json") as file:
         st.session_state["entities"] = json.load(file)
     with open("./intents.json") as file:
         st.session_state["intents"] = json.load(file)
+    with open("./agent-config.json") as file:
+        st.session_state["agent_config"] = json.load(file)
+        for key, val in st.session_state.agent_config.items():
+            st.session_state[key] = val
+            
 
 
 load_data()
 intents_classifier = load_intent_classifier()
 sentiment_analyser = load_sentiment_analyser()
+st.session_state["intent-match-threshold"] = st.slider('No Intent Match Threshold?', 0.0, 1.0, st.session_state["intent-match-threshold"])
+
 
 print("\n\n-----------------Rendering--------------")
 print("Current Status at Start ")
@@ -40,21 +49,28 @@ print("User input taken : ", user_input)
 if user_input:
     customer_sentiment = sentiment_analyser(user_input)[0]
     st.session_state.customer_mood = customer_sentiment["label"]
-    st.session_state.cutomer_mood_score = round(customer_sentiment["score"],2)
-
-    print("Customer Mood Score: ", st.session_state.customer_mood_score)
+    st.session_state.customer_mood_score = customer_sentiment["score"]
     
 
 
 if user_input and not st.session_state.active_topic: 
     print("User Input : ", user_input, " and NO active topic ")
     
+    intents_classifier_result = intents_classifier(str(user_input))
+    current_intent, intent_score = intents_classifier_result[0]["label"] , intents_classifier_result[0]["score"]
 
-    current_intent = intents_classifier(str(user_input))[0]["label"]
-    intent_obj = st.session_state.intents[current_intent]
-    reply = random.choice(intent_obj["responses"])
+    if intent_score < st.session_state["intent-match-threshold"]:
+            current_intent = 'no-match-intent'
+            intent_score = 1- intent_score
+    
     st.session_state["active_intent"] = current_intent
+    st.session_state["active_intent_confidence_score"] = intent_score
+    
     print("Intent Activated : ", current_intent)
+    intent_obj = st.session_state.intents[current_intent]
+    print("Intent Object : ", intent_obj)
+    reply = random.choice(intent_obj["responses"])
+
 
     if intent_obj["params"] != 'None':
         print("Intent needs Context")
@@ -126,9 +142,9 @@ if st.session_state.active_intent:
         st.session_state.messages.append(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"]))
 
 
-st.write("Active Intent : ", st.session_state.active_intent) #metadata
+st.write("Active Intent : ", st.session_state.active_intent, " Score : ", st.session_state["active_intent_confidence_score"]) #metadata
 
-st.write("Customer Mood : ", st.session_state.customer_mood, " ", {"NEGATIVE": '😑', "NEUTRAL": '🤔', "POSITIVE": '😍'}[st.session_state.customer_mood])
+st.write("Customer Mood : ", st.session_state.customer_mood, " ", {"NEGATIVE": '😑', "NEUTRAL": '🤔', "POSITIVE": '😍'}[st.session_state.customer_mood], " Score : ", st.session_state.customer_mood_score)
 #st.write("Active Context : ", st.session_state.active_context) #metadata
 #st.write("Required Context : ", st.session_state.required_context) #metadata
 #st.write("Active Topic : ", st.session_state.active_topic)
