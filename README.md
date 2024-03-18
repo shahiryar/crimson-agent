@@ -6,6 +6,7 @@
 - [X] Sentiment Analysis
 - [ ] Expand and make rebust the rentity reprompts
 - [ ] Add No-Match Intent (threshold based)
+- [ ] Modulate the code for reusablity
 - [ ] Configurations Page to add new Intents and Entities
 - [ ] Configurations Page to add new agents
 - [ ] Train and Retrain Script
