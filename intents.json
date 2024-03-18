@@ -14,7 +14,7 @@
 "tier-info":{"training_phrases": ["Tell me more about each tier","what are various levels of services you offer", "I want to know about the different service levels your offer",
                                     "Can you inform me about perks for each service level?", "what services you offer?", "Tiers", "Different Tiers", "Information about tiers",
                                     "different levels of subscriptions", "what is the range of subscriptions you offer?"],
-            "responses":["We offer three Tiers of service: 1. Silver: most economical with fewer features\n 2. Gold: middle tier with balance between cost and features\n 3. Best tier with a lot of features"],
+            "responses":["We offer three Tiers of service:\n 1. Silver: most economical with fewer features\n 2. Gold: middle tier with balance between cost and features\n 3. Best tier with a lot of features"],
             "params" :"None"},
 "exit-intent": {"training_phrases": ["Bye", "Good Bye", "No thank you!", "End the chat", "No that's it"],
                 "reponses": ["Thank you for using our service, Bye!", "I am grateful that you used our service. Take Care."],
