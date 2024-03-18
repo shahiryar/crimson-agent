@@ -128,7 +128,7 @@ if st.session_state.active_intent:
 
 st.write("Active Intent : ", st.session_state.active_intent) #metadata
 
-st.write("Customer Mood : ", st.session_state.customer_mood, " ", {"NEGATIVE": '🤬', "NEUTRAL": '🤔', "POSITIVE": '😍'}[st.session_state.customer_mood])
+st.write("Customer Mood : ", st.session_state.customer_mood, " ", {"NEGATIVE": '😑', "NEUTRAL": '🤔', "POSITIVE": '😍'}[st.session_state.customer_mood])
 #st.write("Active Context : ", st.session_state.active_context) #metadata
 #st.write("Required Context : ", st.session_state.required_context) #metadata
 #st.write("Active Topic : ", st.session_state.active_topic)
