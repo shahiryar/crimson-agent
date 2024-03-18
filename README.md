@@ -3,6 +3,7 @@
 - [X] Intent Classification
 - [x] Follow up entity reprompt
 - [X] Sentiment Analysis
+- [ ] Add No-Match Intent (threshold based)
 - [ ] Configurations Page to add new Intents and Entities
 - [ ] Configurations Page to add new agents
 - [ ] Handle multiple Sessions
