@@ -8,8 +8,9 @@
 
 ## Week 1: Make Robust
 - [ ] Expand and make rebust the rentity reprompts
-- [ ] Add No-Match Intent (threshold based)
-- [ ] Redirect conversation amdist of active context
+- [X] Add No-Match Intent (threshold based)
+- [ ] Extract all/any parameters from the first user input
+- [ ] Redirect conversation amdist of active context (Cancel Slot Filling)
 - [ ] Handle Input and Output contexts for Intents
 - [ ] Modulate the code for reusablity
 - [ ] Context Lifecycle Management
@@ -26,5 +27,6 @@
 - [ ] Plan Deployment
 
 ## Week n: Make Better
+- [ ] Option for Rule-based Intent Matching
 - [ ] Implement open-source LLM to generate Natural Language Responses
 - [ ] Manage Knowledge Base Creation and Connection
