@@ -87,12 +87,11 @@ if user_input and not st.session_state.active_topic:
     print("Intent Object : ", intent_obj)
     reply = random.choice(intent_obj["responses"])
 
+    st.session_state.required_context = get_missing_context(st.session_state.active_context, intent_obj["params"]) if intent_obj["params"] != 'None' else []
 
-    if intent_obj["params"] != 'None':
+    if st.session_state.required_context:
         print("Intent needs Context")
         #st.session_state.required_context = intent_obj["params"]
-
-        st.session_state.required_context = get_missing_context(st.session_state.active_context, intent_obj["params"])
         print("Will need these params : ", st.session_state.required_context)
 
         st.session_state.active_topic = st.session_state.required_context[0] if len(st.session_state.required_context) else None
@@ -110,11 +109,14 @@ if user_input and not st.session_state.active_topic:
         print("Intent does NOT need Context")
         st.session_state.required_context = None
 
+    #case where the no context is required and the params are not required. The Second condition prevents fulfilment here
+    #fulfilment logic is isolated in a separate case
     if not st.session_state.required_context: 
         print("Appending messages: ", user_input)
         st.session_state.messages.append(str(user_input))
-        print("Appending messages: ", reply)
-        st.session_state.messages.append(str(reply))
+        if intent_obj["params"] == 'None': 
+            print("Appending messages: ", reply)
+            st.session_state.messages.append(str(reply))
 
 
 print("Before the Second If Condition") 
@@ -154,7 +156,9 @@ if user_input and st.session_state.active_topic:
         print("Active Topic Changed to : ", st.session_state.active_topic)
 
 print("Outside the Second If Condtion")
+
 if st.session_state.active_intent:
+    print("Fulfilment in progress")
 
     if st.session_state.active_topic is None and  set(st.session_state.intents[st.session_state.active_intent]["params"]).issubset(set(st.session_state.active_context.keys())):
         st.session_state.messages.append(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"]))
