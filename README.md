@@ -10,7 +10,7 @@
 - [ ] Expand and make rebust the rentity reprompts
 - [X] Add No-Match Intent (threshold based)
 - [ ] Extract all/any parameters from the first user input
-- [ ] Redirect conversation amdist of active context (Cancel Slot Filling)
+- [X] Redirect conversation amdist of active context (Cancel Slot Filling)
 - [ ] Handle Input and Output contexts for Intents
 - [ ] Modulate the code for reusablity
 - [ ] Context Lifecycle Management
