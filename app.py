@@ -50,7 +50,23 @@ if user_input:
     customer_sentiment = sentiment_analyser(user_input)[0]
     st.session_state.customer_mood = customer_sentiment["label"]
     st.session_state.customer_mood_score = customer_sentiment["score"]
-    
+
+
+print()
+if all([user_input, st.session_state.active_topic, is_cancel_intent(str(user_input))]):
+    print("Canceling Slot Filling")
+    st.session_state.active_topic = None
+    st.session_state.active_intent = None
+    st.session_state.required_context = []
+    st.session_state.messages.append(str(user_input))
+    st.session_state.messages.append("Alright, I understand that you want to cancel this request. What else can I do for you?")
+    user_input = ""
+
+    print("Current Status after Cancelation of Slot Filling ")
+    print("Active Intent : ", st.session_state.active_intent) #metadata
+    print("Active Context : ", st.session_state.active_context) #metadata
+    print("Required Context : ", st.session_state.required_context) #metadata
+    print("Active Topic : ", st.session_state.active_topic)
 
 
 if user_input and not st.session_state.active_topic: 
@@ -74,23 +90,25 @@ if user_input and not st.session_state.active_topic:
 
     if intent_obj["params"] != 'None':
         print("Intent needs Context")
-        st.session_state.required_context = intent_obj["params"]
+        #st.session_state.required_context = intent_obj["params"]
+
+        st.session_state.required_context = get_missing_context(st.session_state.active_context, intent_obj["params"])
+        print("Will need these params : ", st.session_state.required_context)
+
         st.session_state.active_topic = st.session_state.required_context[0] if len(st.session_state.required_context) else None
         if len(st.session_state.required_context):
             del st.session_state.required_context[0]
+
         st.session_state.messages.append(str(user_input))
         user_input = None
-        reply = "Alright, I will need some information to do this.\n"
-        entity_obj = st.session_state.entities[st.session_state.active_topic]
-        reply+=random.choice(entity_obj["reprompt"])
-        st.session_state.messages.append(reply)
+        if st.session_state.active_topic:
+            reply = "Alright, I will need some information to do this.\n"
+            entity_obj = st.session_state.entities[st.session_state.active_topic]
+            reply+=random.choice(entity_obj["reprompt"])
+            st.session_state.messages.append(reply)
     else:
         print("Intent does NOT need Context")
         st.session_state.required_context = None
-
-
-
-
 
     if not st.session_state.required_context: 
         print("Appending messages: ", user_input)
@@ -160,5 +178,7 @@ for i, msg in enumerate(st.session_state.messages):
     is_user = i%2==0
     message(msg, is_user=is_user, key=f"{i}2")
 print("Print Chat Ends")
+
+
 
 print("\n----------------END of Rendering-----------------------")
