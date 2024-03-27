@@ -5,22 +5,21 @@ from utils import *
 
 import json
 
-@st.cache_data
-def load_data():
-    print("Loading Data")
-    st.session_state["messages"] = []
-    st.session_state["active_intent"] = None
-    st.session_state["active_intent_confidence_score"] = 1.0
-    st.session_state["active_context"] = {}
-    st.session_state["required_context"] = []
-    st.session_state["active_topic"] = None
-    st.session_state["fallback_count"] = 0
-    st.session_state["held_fulfilment"] = None
-    st.session_state["customer_mood_score"] = 0.0
-    st.session_state["customer_mood"] = 'NEUTRAL'
-    st.session_state["intent-match-threshold"] = 0.3
 
+print("Loading Data")
+st.session_state["messages"] = [] if not ("messages" in st.session_state.keys()) else st.session_state["messages"]
+st.session_state["active_intent"] = None if not("active_intent" in st.session_state.keys()) else st.session_state["active_intent"]
+st.session_state["active_intent_confidence_score"] = 1.0 if not("active_intent_confidence_score") in st.session_state.keys() else st.session_state["active_intent_confidence_score"]
+st.session_state["active_context"] = {} if not("active_context" in st.session_state.keys()) else st.session_state["active_context"]
+st.session_state["required_context"] = [] if not("required_context" in st.session_state.keys()) else st.session_state["required_context"]
+st.session_state["active_topic"] = None if not("active_topic" in st.session_state.keys()) else st.session_state["active_topic"]
+st.session_state["fallback_count"] = 0 if not("fallback_count" in st.session_state.keys()) else st.session_state["fallback_count"]
+st.session_state["held_fulfilment"] = None if not("held_fulfilment" in st.session_state.keys()) else st.session_state["held_fulfilment"]
+st.session_state["customer_mood_score"] = 0.0 if not("customer_mood_score" in st.session_state.keys()) else st.session_state["customer_mood_score"]
+st.session_state["customer_mood"] = 'NEUTRAL' if not("customer_mood" in st.session_state.keys()) else st.session_state["customer_mood"]
+st.session_state["intent-match-threshold"] = 0.3 if not("intent-match-threshold" in st.session_state.keys()) else st.session_state["intent-match-threshold"]
 
+if not ("entities" in st.session_state.keys()):
     with open("./entities.json") as file:
         st.session_state["entities"] = json.load(file)
     with open("./intents.json") as file:
@@ -30,10 +29,8 @@ def load_data():
         for key, val in st.session_state.agent_config.items():
             st.session_state[key] = val
     print("Completed Loading Data")
-            
 
 
-load_data()
 intents_classifier = load_intent_classifier()
 sentiment_analyser = load_sentiment_analyser()
 st.session_state["intent-match-threshold"] = st.slider('No Intent Match Threshold?', 0.0, 1.0, st.session_state["intent-match-threshold"])
