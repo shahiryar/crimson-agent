@@ -12,7 +12,7 @@
 - [ ] ~~Extract all/any parameters from the first user input~~ Not actionable: improve the entity extraction
 - [X] Redirect conversation amdist of active context (Cancel Slot Filling)
 - [X] Reponse formating from context
-- [ ] Design Context Lifecycle Management
+- [X] Design Context Lifecycle Management
 - [ ] Handle Input and Output contexts for Intents
 - [ ] Modulate the code for reusablity
 
