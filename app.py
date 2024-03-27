@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_chat import message
 import random
 from utils import *
-
+from string import Template
 import json
 
 
@@ -104,7 +104,7 @@ if user_input and not st.session_state.active_topic:
             reply = "Alright, I will need some information to do this.\n"
             entity_obj = st.session_state.entities[st.session_state.active_topic]
             reply+=random.choice(entity_obj["reprompt"])
-            st.session_state.messages.append(reply)
+            st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
     else:
         print("Intent does NOT need Context")
         st.session_state.required_context = None
@@ -116,7 +116,7 @@ if user_input and not st.session_state.active_topic:
         st.session_state.messages.append(str(user_input))
         if intent_obj["params"] == 'None': 
             print("Appending messages: ", reply)
-            st.session_state.messages.append(str(reply))
+            st.session_state.messages.append(Template(str(reply)).safe_substitute(st.session_state["active_context"]))
 
 
 print("Before the Second If Condition") 
@@ -130,14 +130,14 @@ if user_input and st.session_state.active_topic:
     if not entity_parameter:
         if st.session_state.fallback_count <2:     
             print("Appending Fallback Prompt for topic : ", st.session_state.active_topic )
-            st.session_state.messages.append(random.choice(entity_obj["fallback_prompt"]))
+            st.session_state.messages.append(Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"]))
             print("Context and Active Topic Remained the same")
             st.session_state.fallback_count+=1
         else:
             st.session_state.active_context["active_intent"] = st.session_state.active_intent
             st.session_state.active_context["active_topic"] = st.session_state.active_topic
             reply = graceful_shutdown(st.session_state.active_context)
-            st.session_state.messages.append(reply)
+            st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
     else:
         st.session_state.active_context[st.session_state.active_topic] = entity_parameter
         print(f"Param {st.session_state.active_context} added to the Context")
@@ -151,7 +151,7 @@ if user_input and st.session_state.active_topic:
             print("Appending Re-Prompt for topic : ", st.session_state.active_topic )
             entity_obj = st.session_state.entities[st.session_state.active_topic]
 
-            st.session_state.messages.append(random.choice(entity_obj["reprompt"]))
+            st.session_state.messages.append(Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"]))
             print("Active Context Updated with value for active topic ")
         print("Active Topic Changed to : ", st.session_state.active_topic)
 
@@ -161,7 +161,8 @@ if st.session_state.active_intent:
     print("Fulfilment in progress")
 
     if st.session_state.active_topic is None and  set(st.session_state.intents[st.session_state.active_intent]["params"]).issubset(set(st.session_state.active_context.keys())):
-        st.session_state.messages.append(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"]))
+        st.session_state.messages.append(Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).
+                                         safe_substitute(st.session_state["active_context"]))
 
 
 st.write("Active Intent : ", st.session_state.active_intent, " Score : ", st.session_state["active_intent_confidence_score"]) #metadata
