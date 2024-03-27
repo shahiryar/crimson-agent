@@ -7,13 +7,14 @@
 - [X] Sentiment Analysis
 
 ## Week 1: Make Robust
-- [ ] Expand and make rebust the rentity reprompts
+- [ ] ~~Expand and make rebust the rentity reprompts~~ Not actionable: define clearly
 - [X] Add No-Match Intent (threshold based)
-- [ ] Extract all/any parameters from the first user input
+- [ ] ~~Extract all/any parameters from the first user input~~ Not actionable: improve the entity extraction
 - [X] Redirect conversation amdist of active context (Cancel Slot Filling)
+- [X] Reponse formating from context
+- [ ] Design Context Lifecycle Management
 - [ ] Handle Input and Output contexts for Intents
 - [ ] Modulate the code for reusablity
-- [ ] Context Lifecycle Management
 
 ## Week 2: Make Configurable
 - [ ] Configurations Page to add new Intents and Entities
