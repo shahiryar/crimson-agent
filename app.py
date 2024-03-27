@@ -7,6 +7,7 @@ import json
 
 @st.cache_data
 def load_data():
+    print("Loading Data")
     st.session_state["messages"] = []
     st.session_state["active_intent"] = None
     st.session_state["active_intent_confidence_score"] = 1.0
@@ -17,6 +18,7 @@ def load_data():
     st.session_state["held_fulfilment"] = None
     st.session_state["customer_mood_score"] = 0.0
     st.session_state["customer_mood"] = 'NEUTRAL'
+    st.session_state["intent-match-threshold"] = 0.3
 
 
     with open("./entities.json") as file:
@@ -27,6 +29,7 @@ def load_data():
         st.session_state["agent_config"] = json.load(file)
         for key, val in st.session_state.agent_config.items():
             st.session_state[key] = val
+    print("Completed Loading Data")
             
 
 
