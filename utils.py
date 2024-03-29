@@ -139,3 +139,6 @@ def determine_intent(active_context_label, utterance, no_match_threshold, classi
     determined_intent = {"label": "no-match-intent", "score":1-most_probable_intent["score"]}
 
   return determined_intent
+
+def get_blank_context():
+   return { "context_label":"", "max_count":0}

@@ -6,11 +6,13 @@ from string import Template
 import json
 
 
+
+
 print("Loading Data")
 st.session_state["messages"] = [] if not ("messages" in st.session_state.keys()) else st.session_state["messages"]
 st.session_state["active_intent"] = None if not("active_intent" in st.session_state.keys()) else st.session_state["active_intent"]
 st.session_state["active_intent_confidence_score"] = 1.0 if not("active_intent_confidence_score") in st.session_state.keys() else st.session_state["active_intent_confidence_score"]
-st.session_state["active_context"] = {"__context__":{ "context_label":"", "count":0}} if not("active_context" in st.session_state.keys()) else st.session_state["active_context"]
+st.session_state["active_context"] = {"__context__":get_blank_context()} if not("active_context" in st.session_state.keys()) else st.session_state["active_context"]
 #st.session_state["active_context"]["__context__"] = "" if not("__context__" in st.session_state.active_context.keys()) else st.session_state["active_context"]["__context__"] #CR001 prevents the naming of an entity or param or context that starts with double hyphen
 st.session_state["required_context"] = [] if not("required_context" in st.session_state.keys()) else st.session_state["required_context"]
 st.session_state["active_topic"] = None if not("active_topic" in st.session_state.keys()) else st.session_state["active_topic"]
@@ -72,6 +74,13 @@ if all([user_input, st.session_state.active_topic, is_cancel_intent(str(user_inp
 
 if user_input and not st.session_state.active_topic: 
     print("User Input : ", user_input, " and NO active topic ")
+
+    #part of context lifecyle management: expire a context when it reaches 0
+    if st.session_state["active_context"]["__context__"]["max_count"] >0:
+        st.session_state["active_context"]["__context__"]["max_count"] -=1
+    else:
+        print(st.session_state["active_context"]["__context__"]["context_label"] ," Context Expired")
+        st.session_state["active_context"]["__context__"] = get_blank_context()
     
     intents_classifier_result = determine_intent(st.session_state["active_context"]["__context__"]["context_label"],
                                                  str(user_input),
@@ -79,8 +88,10 @@ if user_input and not st.session_state.active_topic:
                                                  intents_classifier,
                                                  st.session_state["intents"])
     
+    
     current_intent, intent_score = intents_classifier_result["label"] , intents_classifier_result["score"]
 
+    # remove this no-match-intent logic
     if intent_score < st.session_state["intent-match-threshold"]:
             current_intent = 'no-match-intent'
             intent_score = 1- intent_score
