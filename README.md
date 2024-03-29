@@ -13,7 +13,7 @@
 - [X] Redirect conversation amdist of active context (Cancel Slot Filling)
 - [X] Reponse formating from context
 - [X] Design Context Lifecycle Management
-- [ ] Handle Input and Output contexts for Intents
+- [X] Handle Input and Output contexts for Intents
 - [ ] Modulate the code for reusablity
 
 ## Week 2: Make Configurable
