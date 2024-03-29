@@ -10,8 +10,8 @@ print("Loading Data")
 st.session_state["messages"] = [] if not ("messages" in st.session_state.keys()) else st.session_state["messages"]
 st.session_state["active_intent"] = None if not("active_intent" in st.session_state.keys()) else st.session_state["active_intent"]
 st.session_state["active_intent_confidence_score"] = 1.0 if not("active_intent_confidence_score") in st.session_state.keys() else st.session_state["active_intent_confidence_score"]
-st.session_state["active_context"] = {} if not("active_context" in st.session_state.keys()) else st.session_state["active_context"]
-st.session_state["active_context"]["__context_label__"] = "" if not("active_context" in st.session_state.keys()) else st.session_state["active_context"]["__context_label__"] #CR001 prevents the naming of an entity or param or context that starts with double hyphen
+st.session_state["active_context"] = {"__context__":{ "context_label":"", "count":0}} if not("active_context" in st.session_state.keys()) else st.session_state["active_context"]
+#st.session_state["active_context"]["__context__"] = "" if not("__context__" in st.session_state.active_context.keys()) else st.session_state["active_context"]["__context__"] #CR001 prevents the naming of an entity or param or context that starts with double hyphen
 st.session_state["required_context"] = [] if not("required_context" in st.session_state.keys()) else st.session_state["required_context"]
 st.session_state["active_topic"] = None if not("active_topic" in st.session_state.keys()) else st.session_state["active_topic"]
 st.session_state["fallback_count"] = 0 if not("fallback_count" in st.session_state.keys()) else st.session_state["fallback_count"]
@@ -73,7 +73,7 @@ if all([user_input, st.session_state.active_topic, is_cancel_intent(str(user_inp
 if user_input and not st.session_state.active_topic: 
     print("User Input : ", user_input, " and NO active topic ")
     
-    intents_classifier_result = determine_intent(st.session_state["active_context"]["__context_label__"],
+    intents_classifier_result = determine_intent(st.session_state["active_context"]["__context__"]["context_label"],
                                                  str(user_input),
                                                  st.session_state["intent-match-threshold"],
                                                  intents_classifier,
@@ -169,7 +169,7 @@ if st.session_state.active_intent:
     if st.session_state.active_topic is None and  set(st.session_state.intents[st.session_state.active_intent]["params"]).issubset(set(st.session_state.active_context.keys())):
         st.session_state.messages.append(Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).
                                          safe_substitute(st.session_state["active_context"]))
-        st.session_state.active_context["__context_label__"] = st.session_state.intents[st.session_state.active_intent]['output_context']
+        st.session_state.active_context["__context__"] = st.session_state.intents[st.session_state.active_intent]['output_context']
 
 
 st.write("Active Intent : ", st.session_state.active_intent, " Score : ", st.session_state["active_intent_confidence_score"]) #metadata
