@@ -119,3 +119,23 @@ def is_cancel_intent(text):
     matches = matcher(doc)
     return len(matches) > 0
 
+
+def determine_intent(active_context_label, utterance, no_match_threshold, classifier, intents):
+  print(f"Determining Intent with Active Context : {active_context_label}")
+
+  classes = classifier(utterance, top_k=None)
+  determined_intent = None
+  probable_classes = []
+
+  for el in classes:
+    input_context = intents[el["label"]]["input_context"]
+    if not(input_context and input_context != active_context_label):
+      probable_classes.append(el)
+
+  most_probable_intent = max(probable_classes, key=lambda item: item['score'])
+  if most_probable_intent["score"] > no_match_threshold:
+    determined_intent = most_probable_intent
+  else:
+    determined_intent = {"label": "no-match-intent", "score":1-most_probable_intent["score"]}
+
+  return determined_intent
