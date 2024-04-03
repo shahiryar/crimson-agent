@@ -9,6 +9,7 @@ import json
 
 
 print("Loading Data")
+SEND_WHATSAPP_MESSAGE = True
 st.session_state["messages"] = [] if not ("messages" in st.session_state.keys()) else st.session_state["messages"]
 st.session_state["active_intent"] = None if not("active_intent" in st.session_state.keys()) else st.session_state["active_intent"]
 st.session_state["active_intent_confidence_score"] = 1.0 if not("active_intent_confidence_score") in st.session_state.keys() else st.session_state["active_intent_confidence_score"]
@@ -178,8 +179,13 @@ if st.session_state.active_intent:
     print("Fulfilment in progress")
 
     if st.session_state.active_topic is None and  set(st.session_state.intents[st.session_state.active_intent]["params"]).issubset(set(st.session_state.active_context.keys())):
+        #TODO change this to getting fulfilment from the intents json
         st.session_state.messages.append(Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).
                                          safe_substitute(st.session_state["active_context"]))
+        if SEND_WHATSAPP_MESSAGE:
+            send_whatsapp_message(st.session_state.messages[-1])
+
+         
         st.session_state.active_context["__context__"] = st.session_state.intents[st.session_state.active_intent]['output_context']
 
 

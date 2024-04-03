@@ -142,3 +142,22 @@ def determine_intent(active_context_label, utterance, no_match_threshold, classi
 
 def get_blank_context():
    return { "context_label":"", "max_count":0}
+
+
+def send_whatsapp_message(text):
+  from twilio.rest import Client
+  import os
+
+  account_sid = os.environ["TWILLIO_ACCOUNT_SID"]
+  auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+  client = Client(account_sid, auth_token)
+
+  message = client.messages.create(
+    from_='whatsapp:+14155238886',
+    body=text,
+    to='whatsapp:+923364050797'
+  )
+
+  if message: return True
+  else: return False
+   
