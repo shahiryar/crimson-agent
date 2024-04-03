@@ -24,6 +24,7 @@
 
 ## Week 3: Make Integrated
 - [ ] Communication Channels Integration
+- [X] Enable Whatsapp Message Sending
 - [ ] Enable Webhook Integrations
 - [ ] Plan Deployment
 
