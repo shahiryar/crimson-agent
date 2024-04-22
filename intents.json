@@ -8,7 +8,7 @@
 "subscribe-intent": {"training_phrases": ["I want to subscribe", "subscribe", "Please sign me up", "I want to sign up for your service", "Create subscription", "sign me up for your service", "Sign up", "Help me subscribe", "Give me your services", "I need your services", "Create my account"],
                     "responses": ["Congratulations, you have signed up for our services. How would you like to get two months free by paying for six months up front?",
                                     "Enjoy, $name! I have created your subscription for you.\n Also, I can get for you two months free! All you have to do is pay six months up front. \nWould you like that?"],
-                    "params": ["name", "phone", "pin"],
+                    "params": ["name", "phone", "pin", "tier"],
                     "trainable": true,
                     "input_context":"",
                     "output_context": {"context_label": "subcribe-intent", "max_count":2}},

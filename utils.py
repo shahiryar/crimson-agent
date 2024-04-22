@@ -30,7 +30,7 @@ def graceful_shutdown(context=None):
   return message
 
 def extract_entity(given, label, utterance):
-    if given=="values": entity = extract_entity_given_values(label, utterance)
+    if given=="values": entity = extract_entity_given_values(label, utterance.lower())
     if given=="regex": entity = extract_entity_given_regex(label, utterance)
     if given=="nlp": entity = extract_entity_given_nlp(label, utterance)
     return entity
