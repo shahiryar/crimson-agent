@@ -146,10 +146,20 @@ def get_blank_context():
 
 def send_whatsapp_message(text):
   from twilio.rest import Client
-  import os
 
-  account_sid = os.environ["TWILLIO_ACCOUNT_SID"]
-  auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+  import os
+  from dotenv import load_dotenv
+  if load_dotenv():
+      try:
+        account_sid = os.getenv("TWILLIO_ACCOUNT_SID")
+        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+      except:
+         print("Twillio account or auth token not found in the environment")
+         return False
+  else:
+     print("Environment Variables could not loaded, make sure your have the `.env` file")
+     return False
+
   client = Client(account_sid, auth_token)
 
   message = client.messages.create(
