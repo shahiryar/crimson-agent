@@ -9,7 +9,7 @@ import json
 
 
 print("Loading Data")
-SEND_WHATSAPP_MESSAGE = True
+SEND_WHATSAPP_MESSAGE = False
 st.session_state["messages"] = [] if not ("messages" in st.session_state.keys()) else st.session_state["messages"]
 st.session_state["active_intent"] = None if not("active_intent" in st.session_state.keys()) else st.session_state["active_intent"]
 st.session_state["active_intent_confidence_score"] = 1.0 if not("active_intent_confidence_score") in st.session_state.keys() else st.session_state["active_intent_confidence_score"]
