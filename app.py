@@ -35,7 +35,7 @@ if not ("entities" in st.session_state.keys()):
     print("Completed Loading Data")
 
 
-intents_classifier = load_intent_classifier()
+intents_classifier = load_intent_classifier( model="shahiryar/crimson-agent", revision="29c3aeb9544b8ba8132bd06347a28a5acb5ba43c")
 sentiment_analyser = load_sentiment_analyser()
 st.session_state["intent-match-threshold"] = st.slider('No Intent Match Threshold?', 0.0, 1.0, st.session_state["intent-match-threshold"])
 

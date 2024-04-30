@@ -55,9 +55,9 @@ import streamlit as st
 
 
 @st.cache_resource
-def load_intent_classifier():
+def load_intent_classifier(model, revision):
     from transformers import pipeline
-    return pipeline("text-classification", model="shahiryar/crimson-agent")
+    return pipeline("text-classification", model=model, revision=revision)
 
 @st.cache_resource
 def load_sentiment_analyser():
@@ -170,4 +170,3 @@ def send_whatsapp_message(text):
 
   if message: return True
   else: return False
-   
