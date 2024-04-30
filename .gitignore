@@ -4,3 +4,4 @@ app_next.py
 local_test*
 training/trainIntents.ipynb
 .env
+models
