@@ -5,3 +5,4 @@ local_test*
 training/trainIntents.ipynb
 .env
 models
+training/crimson-agent
