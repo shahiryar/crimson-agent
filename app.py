@@ -129,11 +129,13 @@ if user_input and not st.session_state.active_topic:
 
     #case where the no context is required and the params are not required. The Second condition prevents fulfilment here
     #fulfilment logic is isolated in a separate case
-    if not st.session_state.required_context: 
-        print("Appending messages: ", user_input)
-        st.session_state.messages.append(str(user_input))
+    if not st.session_state.required_context:
+        if user_input: 
+            print("Appending user message: ", user_input)
+            st.session_state.messages.append(str(user_input))
+
         if intent_obj["params"] == 'None': 
-            print("Appending messages: ", reply)
+            print("Appending agent message: ", reply)
             st.session_state.messages.append(Template(str(reply)).safe_substitute(st.session_state["active_context"]))
 
 
