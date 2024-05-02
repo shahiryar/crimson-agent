@@ -4,6 +4,7 @@ import random
 from utils import *
 from string import Template
 import json
+from nlp import dynamo
 
 
 
@@ -160,7 +161,15 @@ if user_input and st.session_state.active_topic:
         if st.session_state.fallback_count <2:     
             print("Appending Fallback Prompt for topic : ", st.session_state.active_topic )
             #st.session_state.messages.append(Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"]))
-            st.session_state.messages.append({"role": "agent", "content": Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"])})
+            #TODO: Get this identity dynamically
+            dynamo_identity = "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
+            user_input = "I am very happy with my subscription. Do you think I made a good decision?"
+            message_history = {"role": "user", "content": "Hi there, I want to subscribe"}, {"role":"agent","content":" Sure, I have signed you up!"}
+            agent_reply_fixed = Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"])
+            
+            agent_reply = dynamo.natural_rephrase(dynamo_identity, str(user_input), st.session_state.messages,agent_reply_fixed)
+            st.session_state.messages.append({"role": "agent", "content": agent_reply})
+            
             print("Context and Active Topic Remained the same")
             st.session_state.fallback_count+=1
         else:
