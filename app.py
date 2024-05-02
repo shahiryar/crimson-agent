@@ -62,8 +62,11 @@ if all([user_input, st.session_state.active_topic, is_cancel_intent(str(user_inp
     st.session_state.active_topic = None
     st.session_state.active_intent = None
     st.session_state.required_context = []
-    st.session_state.messages.append(str(user_input))
-    st.session_state.messages.append("Alright, I understand that you want to cancel this request. What else can I do for you?")
+    #st.session_state.messages.append(str(user_input))
+    st.session_state.messages.append({"role": "user", "content": str(user_input)})
+    agent_reply = "Alright, I understand that you want to cancel this request. What else can I do for you?"
+    #st.session_state.messages.append(agent_reply)
+    st.session_state.messages.append({"role": "agent", "content": agent_reply})
     user_input = ""
 
     print("Current Status after Cancelation of Slot Filling ")
@@ -116,13 +119,16 @@ if user_input and not st.session_state.active_topic:
         if len(st.session_state.required_context):
             del st.session_state.required_context[0]
 
-        st.session_state.messages.append(str(user_input))
+        #st.session_state.messages.append(str(user_input))
+        st.session_state.messages.append({"role": "user", "content": str(user_input)})
+
         user_input = None
         if st.session_state.active_topic:
             reply = "Alright, I will need some information to do this.\n"
             entity_obj = st.session_state.entities[st.session_state.active_topic]
             reply+=random.choice(entity_obj["reprompt"])
-            st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
+            #st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
+            st.session_state.messages.append({"role": "agent", "content": Template(reply).safe_substitute(st.session_state["active_context"])})
     else:
         print("Intent does NOT need Context")
         st.session_state.required_context = None
@@ -132,17 +138,20 @@ if user_input and not st.session_state.active_topic:
     if not st.session_state.required_context:
         if user_input: 
             print("Appending user message: ", user_input)
-            st.session_state.messages.append(str(user_input))
+            #st.session_state.messages.append(str(user_input))
+            st.session_state.messages.append({"role": "user", "content": str(user_input)})
 
         if intent_obj["params"] == 'None': 
             print("Appending agent message: ", reply)
-            st.session_state.messages.append(Template(str(reply)).safe_substitute(st.session_state["active_context"]))
+            #st.session_state.messages.append(Template(str(reply)).safe_substitute(st.session_state["active_context"]))
+            st.session_state.messages.append({"role": "agent", "content": Template(str(reply)).safe_substitute(st.session_state["active_context"])})
 
 
 print("Before the Second If Condition") 
 if user_input and st.session_state.active_topic:
     print("User Input : ", user_input, " and Active Topic : ", st.session_state.active_topic)
-    st.session_state.messages.append(str(user_input))
+    #st.session_state.messages.append(str(user_input))
+    st.session_state.messages.append({"role": "user", "content": str(user_input)})
     entity_obj = st.session_state.entities[st.session_state.active_topic]
 
     entity_parameter = extract_entity(entity_obj["given"], entity_obj["values"], str(user_input))
@@ -150,14 +159,17 @@ if user_input and st.session_state.active_topic:
     if not entity_parameter:
         if st.session_state.fallback_count <2:     
             print("Appending Fallback Prompt for topic : ", st.session_state.active_topic )
-            st.session_state.messages.append(Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"]))
+            #st.session_state.messages.append(Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"]))
+            st.session_state.messages.append({"role": "agent", "content": Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"])})
             print("Context and Active Topic Remained the same")
             st.session_state.fallback_count+=1
         else:
             st.session_state.active_context["active_intent"] = st.session_state.active_intent
             st.session_state.active_context["active_topic"] = st.session_state.active_topic
             reply = graceful_shutdown(st.session_state.active_context)
-            st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
+            #st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
+            st.session_state.messages.append({"role": "agent", "content": Template(reply).safe_substitute(st.session_state["active_context"])})
+
     else:
         st.session_state.active_context[st.session_state.active_topic] = entity_parameter
         print(f"Param {st.session_state.active_context} added to the Context")
@@ -171,7 +183,9 @@ if user_input and st.session_state.active_topic:
             print("Appending Re-Prompt for topic : ", st.session_state.active_topic )
             entity_obj = st.session_state.entities[st.session_state.active_topic]
 
-            st.session_state.messages.append(Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"]))
+            #st.session_state.messages.append(Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"]))
+            st.session_state.messages.append({"role": "agent", "content": Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"])})
+
             print("Active Context Updated with value for active topic ")
         print("Active Topic Changed to : ", st.session_state.active_topic)
 
@@ -182,8 +196,9 @@ if st.session_state.active_intent:
 
     if st.session_state.active_topic is None and  set(st.session_state.intents[st.session_state.active_intent]["params"]).issubset(set(st.session_state.active_context.keys())):
         #TODO change this to getting fulfilment from the intents json
-        st.session_state.messages.append(Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).
-                                         safe_substitute(st.session_state["active_context"]))
+        #st.session_state.messages.append(Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).                                 safe_substitute(st.session_state["active_context"]))
+        st.session_state.messages.append({"role": "agent", "content": Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).safe_substitute(st.session_state["active_context"])})
+
         if SEND_WHATSAPP_MESSAGE:
             send_whatsapp_message(st.session_state.messages[-1])
 
@@ -206,8 +221,9 @@ print("Active Topic : ", st.session_state.active_topic)
 
 print("Print Chat Starts")
 for i, msg in enumerate(st.session_state.messages):
-    is_user = i%2==0
-    message(msg, is_user=is_user, key=f"{i}2")
+    is_user = msg["role"] == "user"
+    print(msg)
+    message(msg["content"], is_user=is_user, key=f"{i}2")
 print("Print Chat Ends")
 
 
