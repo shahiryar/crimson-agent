@@ -1,4 +1,6 @@
 # Crimson Agent
+# How to test it out?
+
 # TODOs
 ## Develop POC
 - [X] Demo Intent Classifier Training
