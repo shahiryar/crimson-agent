@@ -23,6 +23,7 @@ st.session_state["held_fulfilment"] = None if not("held_fulfilment" in st.sessio
 st.session_state["customer_mood_score"] = 0.0 if not("customer_mood_score" in st.session_state.keys()) else st.session_state["customer_mood_score"]
 st.session_state["customer_mood"] = 'NEUTRAL' if not("customer_mood" in st.session_state.keys()) else st.session_state["customer_mood"]
 st.session_state["intent-match-threshold"] = 0.3 if not("intent-match-threshold" in st.session_state.keys()) else st.session_state["intent-match-threshold"]
+dynamo_identity = "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
 
 if not ("entities" in st.session_state.keys()):
     with open("./entities.json") as file:
@@ -67,7 +68,7 @@ if all([user_input, st.session_state.active_topic, is_cancel_intent(str(user_inp
     st.session_state.messages.append({"role": "user", "content": str(user_input)})
     agent_reply = "Alright, I understand that you want to cancel this request. What else can I do for you?"
     #st.session_state.messages.append(agent_reply)
-    st.session_state.messages.append({"role": "agent", "content": agent_reply})
+    st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity, st.session_state.messages,dynamo_identity,st.session_state.messages,agent_reply)})
     user_input = ""
 
     print("Current Status after Cancelation of Slot Filling ")
@@ -129,7 +130,7 @@ if user_input and not st.session_state.active_topic:
             entity_obj = st.session_state.entities[st.session_state.active_topic]
             reply+=random.choice(entity_obj["reprompt"])
             #st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
-            st.session_state.messages.append({"role": "agent", "content": Template(reply).safe_substitute(st.session_state["active_context"])})
+            st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity,st.session_state.messages ,Template(reply).safe_substitute(st.session_state["active_context"]))})
     else:
         print("Intent does NOT need Context")
         st.session_state.required_context = None
@@ -145,7 +146,7 @@ if user_input and not st.session_state.active_topic:
         if intent_obj["params"] == 'None': 
             print("Appending agent message: ", reply)
             #st.session_state.messages.append(Template(str(reply)).safe_substitute(st.session_state["active_context"]))
-            st.session_state.messages.append({"role": "agent", "content": Template(str(reply)).safe_substitute(st.session_state["active_context"])})
+            st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity,st.session_state.messages ,Template(str(reply)).safe_substitute(st.session_state["active_context"]))})
 
 
 print("Before the Second If Condition") 
@@ -163,12 +164,11 @@ if user_input and st.session_state.active_topic:
             #st.session_state.messages.append(Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"]))
             #TODO: Get this identity dynamically
             dynamo_identity = "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
-            user_input = "I am very happy with my subscription. Do you think I made a good decision?"
-            message_history = {"role": "user", "content": "Hi there, I want to subscribe"}, {"role":"agent","content":" Sure, I have signed you up!"}
+            #message_history = {"role": "user", "content": "Hi there, I want to subscribe"}, {"role":"agent","content":" Sure, I have signed you up!"}
             agent_reply_fixed = Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(st.session_state["active_context"])
-            
-            agent_reply = dynamo.natural_rephrase(dynamo_identity, str(user_input), st.session_state.messages,agent_reply_fixed)
-            st.session_state.messages.append({"role": "agent", "content": agent_reply})
+
+            agent_reply = dynamo.natural_rephrase(dynamo_identity, st.session_state.messages,agent_reply_fixed)
+            st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity,st.session_state.messages ,agent_reply)})
             
             print("Context and Active Topic Remained the same")
             st.session_state.fallback_count+=1
@@ -177,7 +177,7 @@ if user_input and st.session_state.active_topic:
             st.session_state.active_context["active_topic"] = st.session_state.active_topic
             reply = graceful_shutdown(st.session_state.active_context)
             #st.session_state.messages.append(Template(reply).safe_substitute(st.session_state["active_context"]))
-            st.session_state.messages.append({"role": "agent", "content": Template(reply).safe_substitute(st.session_state["active_context"])})
+            st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity,st.session_state.messages ,Template(reply).safe_substitute(st.session_state["active_context"]))})
 
     else:
         st.session_state.active_context[st.session_state.active_topic] = entity_parameter
@@ -193,7 +193,7 @@ if user_input and st.session_state.active_topic:
             entity_obj = st.session_state.entities[st.session_state.active_topic]
 
             #st.session_state.messages.append(Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"]))
-            st.session_state.messages.append({"role": "agent", "content": Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"])})
+            st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity,st.session_state.messages,Template(random.choice(entity_obj["reprompt"])).safe_substitute(st.session_state["active_context"])) })
 
             print("Active Context Updated with value for active topic ")
         print("Active Topic Changed to : ", st.session_state.active_topic)
@@ -206,7 +206,7 @@ if st.session_state.active_intent:
     if st.session_state.active_topic is None and  set(st.session_state.intents[st.session_state.active_intent]["params"]).issubset(set(st.session_state.active_context.keys())):
         #TODO change this to getting fulfilment from the intents json
         #st.session_state.messages.append(Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).                                 safe_substitute(st.session_state["active_context"]))
-        st.session_state.messages.append({"role": "agent", "content": Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).safe_substitute(st.session_state["active_context"])})
+        st.session_state.messages.append({"role": "agent", "content": dynamo.natural_rephrase(dynamo_identity, st.session_state.messages, Template(random.choice(st.session_state.intents[st.session_state.active_intent]["responses"])).safe_substitute(st.session_state["active_context"]))})
 
         if SEND_WHATSAPP_MESSAGE:
             send_whatsapp_message(st.session_state.messages[-1])
