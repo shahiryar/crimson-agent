@@ -29,5 +29,5 @@
 
 ## Make Better
 - [ ] Option for Rule-based Intent Matching
-- [ ] Implement open-source LLM to generate Natural Language Responses
+- [X] Implement open-source LLM to generate Natural Language Responses
 - [ ] Manage Knowledge Base Creation and Connection
