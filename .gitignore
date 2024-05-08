@@ -6,3 +6,4 @@ training/trainIntents.ipynb
 .env
 models
 training/crimson-agent
+.venv
