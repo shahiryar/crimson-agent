@@ -1,4 +1,4 @@
-#Loading variables from dotenv
+# Modular function to train a classification model
 from transformers.keras_callbacks import KerasMetricCallback
 import os
 from dotenv import load_dotenv
@@ -16,97 +16,101 @@ import tensorflow as tf
 from transformers import AutoTokenizer
 from transformers.keras_callbacks import PushToHubCallback
 
-sys.path.insert(1, '../')
+sys.path.insert(1, '../')  # Adjust path as needed
 load_dotenv()
 
-#====================================================
-#  Define these Parameters before running the script
-#====================================================
+# Function to load and prepare intent data
+def load_intent_data(intents_file_path, entities_file_path):
+    with open(intents_file_path, 'r') as intents_file:
+        intents = json.load(intents_file)
+    
+    # Entities aren't directly used in this script but are loaded for potential future use
+    with open(entities_file_path, 'r') as entities_file:
+        entities = json.load(entities_file)  
+    
+    class_intents, label_col, text_col = [], [], []
+    for intent, data in intents.items():
+        if data["trainable"]:
+            class_intents.append(intent)
+            for phrase in data["training_phrases"]:
+                text_col.append(phrase)
+                label_col.append(intent)
 
-HF_TOKEN = os.getenv("HF-TOKEN") # Huggingface token
-INTENTS_FILE_PATH = "./intents.json" # jSON file that contains the intents
-ENTITIES_FILE_PATH = "./entities.json" # Entities file that contains the entities
-TOKENIZER_NAME = "distilbert-base-uncased" # name of the tokenizer: for more infor check: https://huggingface.co/google-bert
-HF_REPO_NAME = "crimson-agent" # Name of the repo where the model and its config will be pushed
-MODEL_OUTPUT_DIR = "" # path to a local directory where the model and its config will be saved
+    df = pd.DataFrame({"text": text_col, "label": label_col})
+    id2label = {i: intent for i, intent in enumerate(class_intents)}
+    label2id = {intent: i for i, intent in enumerate(class_intents)}
+    df.replace(label2id, inplace=True)
 
-#====================================================
+    return Dataset.from_pandas(df, preserve_index=False), id2label, label2id
 
-login(token=HF_TOKEN)
+# Function to preprocess the dataset
+def preprocess_dataset(dataset, tokenizer_name):
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    def preprocess_function(examples):
+        return tokenizer(examples["text"], truncation=True)
+    return dataset.map(preprocess_function), tokenizer
 
-with open(INTENTS_FILE_PATH, 'r') as intents_file:
-    intents = json.load(intents_file)
-
-with open(ENTITIES_FILE_PATH, 'r') as entities_file:
-    entities = json.load(entities_file)
-
-class_intents = []
-label_col = []
-text_col = []
-
-for el in intents.items():
-  if (el[1]["trainable"]):
-    class_intents.append(el[0])
-    for doc in el[1]["training_phrases"]:
-      text_col.append(doc)
-      label_col.append(el[0])
-
-df = pd.DataFrame({"text": text_col, "label": label_col})
-
-id2label = {i: intent for i, intent in enumerate(class_intents)}
-label2id = {intent: i for i, intent in enumerate(class_intents)}
-
-df.replace(label2id, inplace=True)
-
-train_dataset = Dataset.from_pandas(df, preserve_index=False)
-
-tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_NAME)
-
-#preprocessing function to tokenize text and truncate sequences to be no longer than DistilBERT’s maximum input length:
-def preprocess_function(examples):
-    return tokenizer(examples["text"], truncation=True)
-
-#Apply the preprocessing function over the entire dataset, use 🤗 Datasets map function
-tokenized_papers = train_dataset.map(preprocess_function)
-
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="tf")
-
-accuracy = evaluate.load("accuracy")
-
-#create a function that passes your predictions and labels to compute to calculate the accuracy:
+# Function to compute evaluation metrics
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)
+    accuracy = evaluate.load("accuracy")
     return accuracy.compute(predictions=predictions, references=labels)
 
-batch_size = 7
-num_epochs = 15
-batches_per_epoch = len(tokenized_papers) // batch_size
-total_train_steps = int(batches_per_epoch * num_epochs)
-optimizer, schedule = create_optimizer(init_lr=2e-5, num_warmup_steps=0, num_train_steps=total_train_steps)
+# Main training function
+def train_classification_model(hf_token,intents_file_path, entities_file_path, tokenizer_name, hf_repo_name, model_output_dir=""):
+    login(hf_token)
+    dataset, id2label, label2id = load_intent_data(intents_file_path, entities_file_path)
+    tokenized_dataset, tokenizer = preprocess_dataset(dataset, tokenizer_name)
 
-num_intents = len(class_intents)
-model = TFAutoModelForSequenceClassification.from_pretrained(
-    TOKENIZER_NAME, num_labels=num_intents, id2label=id2label, label2id=label2id
-)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="tf")
 
-tf_train_set = model.prepare_tf_dataset(
-    tokenized_papers,
-    shuffle=True,
-    batch_size=batch_size,
-    collate_fn=data_collator,
-)
+    batch_size = 7
+    num_epochs = 15
+    batches_per_epoch = len(tokenized_dataset) // batch_size
+    total_train_steps = int(batches_per_epoch * num_epochs)
+    optimizer, schedule = create_optimizer(init_lr=2e-5, num_warmup_steps=0, num_train_steps=total_train_steps)
 
-model.compile(optimizer=optimizer)
-push_to_hub_callback = PushToHubCallback(
-    output_dir=HF_REPO_NAME,
-    tokenizer=tokenizer,
-)
+    num_intents = len(id2label)
+    model = TFAutoModelForSequenceClassification.from_pretrained(
+        tokenizer_name, num_labels=num_intents, id2label=id2label, label2id=label2id
+    )
 
-metric_callback = KerasMetricCallback(metric_fn=compute_metrics, eval_dataset=tf_train_set)
+    tf_train_set = model.prepare_tf_dataset(
+        tokenized_dataset,
+        shuffle=True,
+        batch_size=batch_size,
+        collate_fn=data_collator,
+    )
 
-callbacks = [metric_callback, push_to_hub_callback]
+    model.compile(optimizer=optimizer)
 
-model.fit(x=tf_train_set, epochs=num_epochs, callbacks=callbacks)
-if MODEL_OUTPUT_DIR:
-    model.save_pretrained(MODEL_OUTPUT_DIR)
+    push_to_hub_callback = PushToHubCallback(
+        output_dir=hf_repo_name,
+        tokenizer=tokenizer,
+    )
+
+    metric_callback = KerasMetricCallback(metric_fn=compute_metrics, eval_dataset=tf_train_set)
+
+    callbacks = [metric_callback, push_to_hub_callback]
+
+    model.fit(x=tf_train_set, epochs=num_epochs, callbacks=callbacks)
+
+    if model_output_dir:
+        model.save_pretrained(model_output_dir)
+    
+    
+
+# Example usage:
+if __name__ == "__main__":
+    # Define these parameters before running
+    HF_TOKEN = os.getenv("HF-TOKEN") # Huggingface token
+    INTENTS_FILE_PATH = "./intents.json"  # Path to your intents.json
+    ENTITIES_FILE_PATH = "./entities.json"  # Path to your entities.json
+    TOKENIZER_NAME = "distilbert-base-uncased" 
+    HF_REPO_NAME = "your-repo-name"  # Replace with your actual Hugging Face repo name
+    MODEL_OUTPUT_DIR = ""  # Set to desired output directory if saving locally
+
+    train_classification_model(HF_TOKEN, INTENTS_FILE_PATH, ENTITIES_FILE_PATH, 
+                              TOKENIZER_NAME, HF_REPO_NAME, MODEL_OUTPUT_DIR)
+    
