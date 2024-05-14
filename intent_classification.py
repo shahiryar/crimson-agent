@@ -1,0 +1,144 @@
+import random
+import json
+from utils import *
+from string import Template
+from nlp import dynamo
+
+class Bot:
+    def __init__(self):
+        self.active_intent = None
+        self.active_intent_confidence_score = 1.0
+        self.active_context = {"__context__": get_blank_context()}
+        self.required_context = []
+        self.active_topic = None
+        self.fallback_count = 0
+        self.held_fulfilment = None
+        self.customer_mood_score = 0.0
+        self.customer_mood = 'NEUTRAL'
+        self.intent_match_threshold = 0.3
+        self.messages = []
+        self.dynamo_identity= "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
+        self.context_history = []
+
+        with open("./entities.json") as file:
+            self.entities = json.load(file)
+        with open("./intents.json") as file:
+            self.intents = json.load(file)
+        with open("./agent-config.json") as file:
+            self.agent_config = json.load(file)
+            for key, val in self.agent_config.items():
+                setattr(self, key, val)
+
+        self.intents_classifier = load_intent_classifier(model="shahiryar/crimson-agent", revision="29c3aeb9544b8ba8132bd06347a28a5acb5ba43c")
+        self.sentiment_analyser = load_sentiment_analyser()
+
+    def process_input(self, user_input):
+        self.messages.append({"role": "user", "content": str(user_input)})
+        response = {}
+        
+        # determine user sentiment
+        if user_input:
+            customer_sentiment = self.sentiment_analyser(user_input)[0]
+            self.customer_mood = customer_sentiment["label"]
+            self.customer_mood_score = customer_sentiment["score"]
+        
+        # determine if the the user wants to cancel slot filling 
+        if all([user_input, self.active_topic, is_cancel_intent(str(user_input))]):
+            self.cancel_slot_filling(user_input)
+            agent_reply = "Alright, I understand that you want to cancel this request. What else can I do for you?"
+            agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, self.dynamo_identity, self.messages, agent_reply)
+            self.messages.append({"role": "agent", "content": agent_reply})
+            response["reply"] = "Alright, I understand that you want to cancel this request. What else can I do for you?"
+       
+        # determine intent given no topic to fill
+        elif user_input and not self.active_topic:
+            response["reply"] = self.process_no_topic(user_input)
+        
+        # if there is an active topic to fill
+        elif user_input and self.active_topic:
+            response["reply"] = self.process_with_topic(user_input)
+                
+
+        response["active_intent"] = self.active_intent
+        response["active_intent_confidence_score"] = self.active_intent_confidence_score
+        response["customer_mood"] = self.customer_mood
+        response["customer_mood_score"] = self.customer_mood_score
+
+        return response
+
+    def cancel_slot_filling(self):
+        self.active_topic = None
+        self.active_intent = None
+        self.required_context = []
+
+    def process_no_topic(self, user_input):
+        self.active_context["__context__"]["max_count"] -= 1 if self.active_context["__context__"]["max_count"] > 0 else 0
+        intents_classifier_result = determine_intent(self.active_context["__context__"]["context_label"], str(user_input), self.intent_match_threshold, self.intents_classifier, self.intents)
+        current_intent, intent_score = intents_classifier_result["label"], intents_classifier_result["score"]
+        self.active_intent = current_intent
+        self.active_intent_confidence_score = intent_score
+        self.required_context = get_missing_context(self.active_context, self.intents[current_intent]["params"]) if self.intents[current_intent]["params"] != 'None' else []
+
+        if len(self.required_context):
+            agent_reply = "Alright, I will need some information to do this.\n" + self.prompt_for_next_param()
+            self.messages.append({"role": "agent", "content": agent_reply})
+        else:
+            agent_reply = self.fullfil_active_intent()
+        
+        self.messages.append({"role": "agent", "content": agent_reply})
+        return agent_reply
+            
+    def prompt_for_next_param(self):
+        if len(self.required_context):
+            self.active_topic = self.required_context.pop(0)
+            self.context_history.append(self.active_topic)
+
+            entity_obj = self.entities[self.active_topic]
+            agent_reply =  random.choice(entity_obj["reprompt"])
+            agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(agent_reply).safe_substitute(self.active_context))
+            #self.messages.append({"role": "agent", "content": agent_reply})
+            return agent_reply
+        return None
+    
+    def has_context_for_fullfilment(self):
+        return self.active_topic is None and set(self.intents[self.active_intent]["params"]).issubset(set(self.active_context.keys()))
+    
+    def fullfil_active_intent(self):
+        #TODO: assert here and on other places with error handling
+        if self.has_context_for_fullfilment():
+            agent_reply = random.choice(self.intents[self.active_intent]["responses"])
+            self.active_intent = None
+            self.active_context["__context__"] = self.intents[self.active_intent]['output_context']
+            #TODO: Check if there is anyother fulfilment
+            return agent_reply
+        return None
+
+
+    def process_with_topic(self, user_input):
+        #self.messages.append({"role": "user", "content": str(user_input)})
+        entity_obj = self.entities[self.active_topic]
+        entity_parameter = extract_entity(entity_obj["given"], entity_obj["values"], str(user_input))
+        
+        if not entity_parameter: # Couldn't find the entity from the given text
+            if self.fallback_count < 2: #TODO: MAKE THIS NUMBER CONFIGURABLE VARIABLE
+                agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(self.active_context))
+                #self.messages.append({"role": "agent", "content": agent_reply})
+                self.fallback_count += 1
+            else:
+                self.active_context["active_intent"] = self.active_intent
+                self.active_context["active_topic"] = self.active_topic
+                agent_reply = graceful_shutdown(self.active_context)
+                #self.messages.append({"role": "agent", "content": dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(reply).safe_substitute(self.active_context))})
+        else:
+            self.active_context[self.active_topic] = entity_parameter
+            agent_reply = self.prompt_for_next_param()
+            if not agent_reply:
+                agent_reply = self.fullfil_active_intent()
+        return agent_reply
+                
+
+
+bot = Bot()
+
+bot.process_input("Hi")
+bot.process_input("I want to subscribe")
