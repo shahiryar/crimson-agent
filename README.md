@@ -1,5 +1,19 @@
 # Crimson Agent
 # How to test it out?
+Note: _Before starting make sure you have `python3` and `pip` installed on your system_
+1. Clone this repo:
+```bash
+git clone https://github.com/shahiryar/crimson-agent.git
+```
+2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+3. Run the app
+```bash
+streamlit run app.py
+```
+-------------------
 
 # TODOs
 ## Develop POC
