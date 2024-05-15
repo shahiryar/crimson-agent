@@ -35,7 +35,7 @@ class Bot:
     def process_input(self, user_input):
         self.messages.append({"role": "user", "content": str(user_input)})
         response = {}
-        
+
         # determine user sentiment
         if user_input:
             customer_sentiment = self.sentiment_analyser(user_input)[0]
@@ -44,9 +44,9 @@ class Bot:
         
         # determine if the the user wants to cancel slot filling 
         if all([user_input, self.active_topic, is_cancel_intent(str(user_input))]):
-            self.cancel_slot_filling(user_input)
+            self.cancel_slot_filling()
             agent_reply = "Alright, I understand that you want to cancel this request. What else can I do for you?"
-            agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, self.dynamo_identity, self.messages, agent_reply)
+            agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, self.messages)
             self.messages.append({"role": "agent", "content": agent_reply})
             response["reply"] = "Alright, I understand that you want to cancel this request. What else can I do for you?"
        
@@ -78,14 +78,13 @@ class Bot:
         self.active_intent = current_intent
         self.active_intent_confidence_score = intent_score
         self.required_context = get_missing_context(self.active_context, self.intents[current_intent]["params"]) if self.intents[current_intent]["params"] != 'None' else []
-
+        print("Determined Intent : ", current_intent, " : ", self.active_intent)
         if len(self.required_context):
             agent_reply = "Alright, I will need some information to do this.\n" + self.prompt_for_next_param()
             self.messages.append({"role": "agent", "content": agent_reply})
         else:
             agent_reply = self.fullfil_active_intent()
-        
-        self.messages.append({"role": "agent", "content": agent_reply})
+            self.messages.append({"role": "agent", "content": agent_reply})
         return agent_reply
             
     def prompt_for_next_param(self):
@@ -98,19 +97,27 @@ class Bot:
             agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(agent_reply).safe_substitute(self.active_context))
             #self.messages.append({"role": "agent", "content": agent_reply})
             return agent_reply
+        else:
+            self.active_topic=None
         return None
     
     def has_context_for_fullfilment(self):
-        return self.active_topic is None and set(self.intents[self.active_intent]["params"]).issubset(set(self.active_context.keys()))
+        return ((len(self.required_context)==0)
+                 or (self.active_topic is None 
+                     and set(self.intents[self.active_intent]["params"]).issubset(set(self.active_context.keys()))))
     
     def fullfil_active_intent(self):
         #TODO: assert here and on other places with error handling
+        print(self.active_intent)
         if self.has_context_for_fullfilment():
             agent_reply = random.choice(self.intents[self.active_intent]["responses"])
-            self.active_intent = None
+            agent_reply = Template(str(agent_reply)).safe_substitute(self.active_context)
             self.active_context["__context__"] = self.intents[self.active_intent]['output_context']
             #TODO: Check if there is anyother fulfilment
+
+            self.active_intent = None
             return agent_reply
+        
         return None
 
 
@@ -138,7 +145,9 @@ class Bot:
                 
 
 
-bot = Bot()
 
+bot = Bot()
 bot.process_input("Hi")
 bot.process_input("I want to subscribe")
+bot.process_input("Nevermind")
+bot.process_input("No")
