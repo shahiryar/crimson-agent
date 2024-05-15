@@ -7,15 +7,19 @@ def generate(dynamo_identity, user_input, message_history):
     return str(reply)
 
 def natural_rephrase(dynamo_identity, message_history, text, model='gemini'):
-    prompt = f"Rephrase this: {text}"
-    if model== 'llama2':
-        llm = Ollama(model="llama2")
-        reply = llm.invoke(prompt)
-    elif model == 'gemini':
-        reply = gemini(prompt)
-    else:
-        print("Model not valid!")
-        return None
+    try:
+        prompt = f"Rephrase this: {text}"
+        if model== 'llama2':
+            llm = Ollama(model="llama2")
+            reply = llm.invoke(prompt)
+        elif model == 'gemini':
+            reply = gemini(prompt)
+        else:
+            print("Model not valid!")
+            return None
+    except:
+        print("Given text could not be rephrased responding with echo")
+        reply = text
     return str(reply)
 
 
@@ -41,6 +45,8 @@ def gemini(prompt):
     
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
+        from pprint import pprint
+        pprint(response.json())
         return response.json()["candidates"][0]["content"]["parts"][0]['text']
     else:
         print("Error:", response.status_code)
