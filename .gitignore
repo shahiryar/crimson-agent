@@ -7,3 +7,4 @@ training/trainIntents.ipynb
 models
 training/crimson-agent
 .venv
+app_depreciated.py
