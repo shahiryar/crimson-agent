@@ -1,4 +1,6 @@
 # Crimson Agent
+<img src="./assets/Crimson Agent Avatar.jpeg" alt="A powerful crimson horse showing Crimson Agent's Avatar" width=300>
+
 # How to test it out?
 Note: _Before starting make sure you have `python3` and `pip` installed on your system_
 1. Clone this repo:
