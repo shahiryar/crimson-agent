@@ -14,7 +14,7 @@
 - [X] Reponse formating from context
 - [X] Design Context Lifecycle Management
 - [X] Handle Input and Output contexts for Intents
-- [ ] Modulate the code for reusablity
+- [X] Modulate the code for reusablity
 
 ## Make Configurable
 - [ ] Configurations Page to add new Intents and Entities and a Configuration Page to add new agents
