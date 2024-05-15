@@ -144,16 +144,3 @@ class Agent:
             if not agent_reply:
                 agent_reply = self.fullfil_active_intent()
         return agent_reply
-                
-
-
-
-
-intent_classifier =  load_intent_classifier(model="shahiryar/crimson-agent", revision="29c3aeb9544b8ba8132bd06347a28a5acb5ba43c")
-sentiment_analyser =  load_sentiment_analyser()
-
-agent = Agent(intent_classifier, sentiment_analyser)
-agent.process_input("Hi")
-agent.process_input("I want to subscribe")
-agent.process_input("Nevermind")
-agent.process_input("No")
