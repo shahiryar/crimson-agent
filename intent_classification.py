@@ -4,8 +4,8 @@ from utils import *
 from string import Template
 from nlp import dynamo
 
-class Bot:
-    def __init__(self):
+class Agent:
+    def __init__(self, intent_classifier, sentiment_analyser, intents_path="./intents.json", entities_path= "./entities.json", agent_config_path="./agent-config.json" ):
         self.active_intent = None
         self.active_intent_confidence_score = 1.0
         self.active_context = {"__context__": get_blank_context()}
@@ -19,18 +19,20 @@ class Bot:
         self.messages = []
         self.dynamo_identity= "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
         self.context_history = []
+        #self.agent_name
+        #self.agent_uid
 
-        with open("./entities.json") as file:
+        with open(entities_path) as file:
             self.entities = json.load(file)
-        with open("./intents.json") as file:
+        with open(intents_path) as file:
             self.intents = json.load(file)
-        with open("./agent-config.json") as file:
+        with open(agent_config_path) as file:
             self.agent_config = json.load(file)
             for key, val in self.agent_config.items():
                 setattr(self, key, val)
 
-        self.intents_classifier = load_intent_classifier(model="shahiryar/crimson-agent", revision="29c3aeb9544b8ba8132bd06347a28a5acb5ba43c")
-        self.sentiment_analyser = load_sentiment_analyser()
+        self.intents_classifier = intent_classifier
+        self.sentiment_analyser = sentiment_analyser
 
     def process_input(self, user_input):
         self.messages.append({"role": "user", "content": str(user_input)})
@@ -146,8 +148,12 @@ class Bot:
 
 
 
-bot = Bot()
-bot.process_input("Hi")
-bot.process_input("I want to subscribe")
-bot.process_input("Nevermind")
-bot.process_input("No")
+
+intent_classifier =  load_intent_classifier(model="shahiryar/crimson-agent", revision="29c3aeb9544b8ba8132bd06347a28a5acb5ba43c")
+sentiment_analyser =  load_sentiment_analyser()
+
+agent = Agent(intent_classifier, sentiment_analyser)
+agent.process_input("Hi")
+agent.process_input("I want to subscribe")
+agent.process_input("Nevermind")
+agent.process_input("No")
