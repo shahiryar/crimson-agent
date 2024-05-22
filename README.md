@@ -36,7 +36,7 @@ streamlit run app.py
 ## Make Configurable
 - [ ] Configurations Page to add new Intents and Entities and a Configuration Page to add new agents
 - [X] Train and Retrain Script
-- [ ] Session Lifecycle Management
+- [X] Session Lifecycle Management
 
 ## Make Integrated
 - [ ] Communication Channels Integration
