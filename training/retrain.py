@@ -59,6 +59,46 @@ def compute_metrics(eval_pred):
 
 # Main training function
 def train_classification_model(hf_token,intents_file_path, entities_file_path, tokenizer_name, hf_repo_name, model_output_dir=""):
+    """
+    Trains a sequence classification model using the provided dataset and uploads the trained model to Hugging Face Hub.
+
+    Args:
+        hf_token (str): The Hugging Face authentication token.
+        intents_file_path (str): Path to the JSON file containing intents data.
+        entities_file_path (str): Path to the JSON file containing entities data.
+        tokenizer_name (str): Name of the pre-trained tokenizer to use (e.g., 'distilbert-base-uncased').
+        hf_repo_name (str): Name of the Hugging Face repository to push the trained model to.
+        model_output_dir (str, optional): Directory to save the trained model locally. Default is "" (do not save locally).
+
+    Returns:
+        None
+
+    Example usage:
+        >>> HF_TOKEN = os.getenv("HF-TOKEN")
+        >>> INTENTS_FILE_PATH = "./intents.json"
+        >>> ENTITIES_FILE_PATH = "./entities.json"
+        >>> TOKENIZER_NAME = "distilbert-base-uncased"
+        >>> HF_REPO_NAME = "your-repo-name"
+        >>> MODEL_OUTPUT_DIR = "./model_output"
+        >>> train_classification_model(HF_TOKEN, INTENTS_FILE_PATH, ENTITIES_FILE_PATH, 
+                                      TOKENIZER_NAME, HF_REPO_NAME, MODEL_OUTPUT_DIR)
+
+    Steps:
+        1. Authenticates with Hugging Face Hub using the provided token.
+        2. Loads and processes the intents and entities data from the provided file paths.
+        3. Preprocesses the dataset using the specified tokenizer.
+        4. Initializes the model and optimizer.
+        5. Converts the dataset into a TensorFlow dataset.
+        6. Compiles and trains the model, with evaluation and push-to-hub callbacks.
+        7. Optionally saves the trained model to a local directory if specified.
+
+    Notes:
+        - Ensure the intents file is a valid JSON containing the training phrases and labels.
+        - Entities file is currently not utilized but is loaded for potential future use.
+        - The tokenizer and model name should correspond to a model available on Hugging Face Model Hub.
+    """
+    
+    
     login(hf_token)
     dataset, id2label, label2id = load_intent_data(intents_file_path, entities_file_path)
     tokenized_dataset, tokenizer = preprocess_dataset(dataset, tokenizer_name)
