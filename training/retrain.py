@@ -2,9 +2,9 @@
 from transformers.keras_callbacks import KerasMetricCallback
 import os
 from dotenv import load_dotenv
+import sys
 import json
 from huggingface_hub import login
-import sys
 from datasets import Dataset
 import pandas as pd
 from transformers import DataCollatorWithPadding
@@ -16,11 +16,10 @@ import tensorflow as tf
 from transformers import AutoTokenizer
 from transformers.keras_callbacks import PushToHubCallback
 
-sys.path.insert(1, '../')  # Adjust path as needed
-load_dotenv()
-
 # Function to load and prepare intent data
 def load_intent_data(intents_file_path, entities_file_path):
+    sys.path.insert(1, '../')  # Adjust path as needed
+    load_dotenv()
     with open(intents_file_path, 'r') as intents_file:
         intents = json.load(intents_file)
     
@@ -139,7 +138,22 @@ def train_classification_model(hf_token,intents_file_path, entities_file_path, t
     if model_output_dir:
         model.save_pretrained(model_output_dir)
     
+    save_agent_config(hf_repo_name, hf_repo_name, model_output_dir, intents_file_path, entities_file_path )
     
+
+import json
+def save_agent_config(repo,model_name,intents_path, entities_path,local_model_path=""):
+    with open("../artefacts/agent-config.json", 'w') as config_file:
+        data = {
+            "hf_repo_name": repo,
+            "model_name": model_name,
+            "intents_path": intents_path,
+            "entities_path": entities_path,
+        }
+        if local_model_path:
+            data["local_model"] = local_model_path
+        json.dump(data, config_file)
+
 
 # Example usage:
 if __name__ == "__main__":
