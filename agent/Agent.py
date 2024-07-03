@@ -19,6 +19,7 @@ class Agent:
         self.messages = []
         self.dynamo_identity= "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
         self.context_history = []
+        self.use_dynamo = False
         #self.agent_name
         #self.agent_uid
 
@@ -48,9 +49,12 @@ class Agent:
         if all([user_input, self.active_topic, is_cancel_intent(str(user_input))]):
             self.cancel_slot_filling()
             agent_reply = "Alright, I understand that you want to cancel this request. What else can I do for you?"
-            agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, self.messages)
+
+            if self.use_dynamo:
+                agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, self.messages)
+
             self.messages.append({"role": "agent", "content": agent_reply})
-            response["reply"] = "Alright, I understand that you want to cancel this request. What else can I do for you?"
+            response["reply"] = agent_reply
        
         # determine intent given no topic to fill
         elif user_input and not self.active_topic:
@@ -96,8 +100,12 @@ class Agent:
 
             entity_obj = self.entities[self.active_topic]
             agent_reply =  random.choice(entity_obj["reprompt"])
-            agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(agent_reply).safe_substitute(self.active_context))
-            #self.messages.append({"role": "agent", "content": agent_reply})
+
+            self.use_dynamo = self.intents[self.active_intent]["use_dynamo"]
+            if self.use_dynamo:
+                agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(agent_reply).safe_substitute(self.active_context))
+                #self.messages.append({"role": "agent", "content": agent_reply})
+
             return agent_reply
         else:
             self.active_topic=None
@@ -130,8 +138,10 @@ class Agent:
         
         if not entity_parameter: # Couldn't find the entity from the given text
             if self.fallback_count < 2: #TODO: MAKE THIS NUMBER CONFIGURABLE VARIABLE
-                agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(self.active_context))
-                #self.messages.append({"role": "agent", "content": agent_reply})
+                agent_reply = Template(random.choice(entity_obj["fallback_prompt"])).safe_substitute(self.active_context)
+                if self.use_dynamo:
+                    agent_reply = dynamo.natural_rephrase(self.dynamo_identity, self.messages, agent_reply)
+                    #self.messages.append({"role": "agent", "content": agent_reply})
                 self.fallback_count += 1
             else:
                 self.active_context["active_intent"] = self.active_intent
