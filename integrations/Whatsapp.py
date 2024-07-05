@@ -18,19 +18,27 @@ class Whatsapp:
     def load_credentials(self):
         """
         Loads Twilio account SID and auth token from environment variables.
+        Returns True if successful, False otherwise.
         """
         if load_dotenv():
             try:
                 self.account_sid = os.getenv("TWILLIO_ACCOUNT_SID")
                 self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+                return True
             except:
                 print("Twillio account or auth token not found in the environment")
                 self.account_sid = None
                 self.auth_token = None
+                return False
         else:
             print("Environment Variables could not loaded, make sure your have the `.env` file")
             self.account_sid = None
             self.auth_token = None
+            return False
+
+
+    def credentials_available():
+        return False
 
     def send_message(self, text):
         """
