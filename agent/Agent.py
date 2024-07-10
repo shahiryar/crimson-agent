@@ -3,6 +3,7 @@ import json
 from utils import *
 from string import Template
 from nlp import dynamo
+from integrations import Whatsapp
 
 class Agent:
     def __init__(self, intent_classifier, sentiment_analyser, intents_path="./intents.json", entities_path= "./entities.json", agent_config_path="./agent-config.json" ):
@@ -20,6 +21,8 @@ class Agent:
         self.dynamo_identity= "You are a helpful assistent name Crimson. You help users manage their subscriptions. You can help them signup or signff. You consider the conversation history to respond to the user. In the conversation your role is as agent. "
         self.context_history = []
         self.use_dynamo = False
+        self.whatsappClient = None
+        self.whatsappIntegrated = False
         #self.agent_name
         #self.agent_uid
 
@@ -124,6 +127,9 @@ class Agent:
             agent_reply = Template(str(agent_reply)).safe_substitute(self.active_context)
             self.active_context["__context__"] = self.intents[self.active_intent]['output_context']
             #TODO: Check if there is anyother fulfilment
+            print(self.active_intent, ": Notification : " ,self.intents[self.active_intent]["notify"])
+            if self.whatsappIntegrated and self.intents[self.active_intent]["notify"]:
+                self.send_whatsapp_message(agent_reply)
 
             self.active_intent = None
             return agent_reply
@@ -154,3 +160,39 @@ class Agent:
             if not agent_reply:
                 agent_reply = self.fullfil_active_intent()
         return agent_reply
+    
+    def integrate_whatsapp(self, sender_number="+14155238886", receiver_number="+923364050797"):
+        """
+        Integrates the agent with WhatsApp using Twilio.
+
+        Returns:
+            bool: True if integration is successful, False otherwise.
+        """
+        wa = Whatsapp(sender_number, receiver_number)
+        if wa.credentials_available():
+            self.whatsappClient = wa
+            self.whatsappIntegrated = True
+            return True
+        else:
+            return False
+    
+    def send_whatsapp_message(self, message):
+        """
+        Sends a message to the WhatsApp receiver.
+
+        Args:
+            message (str): The message to send.
+
+        Returns:
+            bool: True if the message was sent successfully, False otherwise.
+        """
+        if self.whatsappIntegrated:
+            self.whatsappClient.send_message(message)
+            return True
+        else:
+            print("Whatsapp not integrated")
+            return False
+
+
+
+

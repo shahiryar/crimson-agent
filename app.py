@@ -17,7 +17,24 @@ def create_session():
     return Session(create_agent())
 
 
+
 current_session = create_session()
+
+# Sidebar
+with st.sidebar:
+    # Chat interface
+    st.title("Integrations")
+    #check box to Integrate Whatsapp
+    whatsapp_integration = st.checkbox("Integrate with WhatsApp")
+    if whatsapp_integration:
+        sender_number = st.text_input("Your WhatsApp number (international format):", value="+14155238886")
+        receiver_number = st.text_input("Receiver's WhatsApp number (international format):", value="+923364050797")
+        if st.button("Integrate"):
+            if current_session.agent.integrate_whatsapp(sender_number, receiver_number):
+                st.success("WhatsApp integration successful!")
+            else:
+                st.error("Failed to integrate with WhatsApp. Please check your credentials.")
+
 
 st.session_state["messages"] = [] if not ("messages" in st.session_state.keys()) else st.session_state["messages"]
 current_session.set_state("messages", st.session_state["messages"])
@@ -38,3 +55,4 @@ if user_input:
 for i, msg in enumerate(st.session_state.messages):
     is_user = msg["role"] == "user"
     message(msg["content"], is_user=is_user, key=f"{i}2")
+

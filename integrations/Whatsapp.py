@@ -14,6 +14,7 @@ class Whatsapp:
         self.sender_number = sender_number
         self.receiver_number = receiver_number
         self.load_credentials()
+        self.create_twilio_client()
 
     def load_credentials(self):
         """
@@ -35,10 +36,18 @@ class Whatsapp:
             self.account_sid = None
             self.auth_token = None
             return False
+        
+    def credentials_available(self):
+        """
+        Checks if Twilio account SID and auth token are available.
 
-
-    def credentials_available():
-        return False
+        Returns:
+            bool: True if both SID and auth token are available, False otherwise.
+        """
+        if self.account_sid and self.auth_token:
+            return True
+        else:
+            return False
 
     def send_message(self, text):
         """
@@ -50,8 +59,8 @@ class Whatsapp:
         Returns:
             bool: True if the message was sent successfully, False otherwise.
         """
-        if self.account_sid and self.auth_token:
-            client = Client(self.account_sid, self.auth_token)
+        if self.twilioClient:
+            client = self.twilioClient
             message = client.messages.create(
                 from_=f'whatsapp:{self.sender_number}',
                 body=text,
@@ -64,6 +73,18 @@ class Whatsapp:
         else:
             print("Twillio credentials not found. Unable to send message.")
             return False
+    
+    def create_twilio_client(self):
+        if self.account_sid and self.auth_token:
+            client = Client(self.account_sid, self.auth_token)
+            self.twilioClient = client
+            return True
+        else:
+            self.twilioClient = None
+            return False
+        
+    def get_twilio_client(self):
+      return self.twilioClient
 
     def receive_message(self):
         """
