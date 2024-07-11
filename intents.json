@@ -6,7 +6,8 @@
                             "trainable": true,
                             "input_context":"",
                             "output_context": {"context_label": "", "max_count":0},
-                            "notify": false
+                            "notify": false,
+                            "fulfilements":[]
                         
                         },
 "subscribe-intent": {"training_phrases": ["I want to subscribe", "subscribe", "Please sign me up", "I want to sign up for your service", "Create subscription", "sign me up for your service", "Sign up", "Help me subscribe", "Give me your services", "I need your services", "Create my account"],
@@ -17,7 +18,8 @@
                     "use_dynamo": false,
                     "input_context":"",
                     "output_context": {"context_label": "subcribe-intent", "max_count":2},
-                    "notify": true
+                    "notify": true,
+                    "fulfilements":["make_payment"]
                 },
 "subscribe-followup-no": {"training_phrases": ["no thanks", "nope", "I don't need it", "not really", "I don't think so", "no, thank you", "Nevermind", "thank you but not this time", "I diagree", "Not this time", "Some other time", "ask me later maybe", "Not now"],
                     "responses": ["Alright, $name. I will not sigin you up for the discount. Anything else?"],
@@ -26,7 +28,8 @@
                     "use_dynamo": false,
                     "input_context":"subcribe-intent",
                     "output_context": {"context_label": "", "max_count":0},
-                    "notify": false
+                    "notify": false,
+                    "fulfilements":[]
                 },
 "subscribe-followup-yes": {"training_phrases": ["yeah", "yes", "sure", "alright", "I would love that", "I would like that", "Sounds Good", "I would like that", "I think so", "I like it", "I want it", "okay", "sign me up"],
                     "responses": ["Alright, $name. Great choice! I have added the discount on your bill. Enjoy!\n Anything else I can do for you?"],
@@ -35,7 +38,8 @@
                     "use_dynamo": false,
                     "input_context":"subcribe-intent",
                     "output_context": {"context_label": "", "max_count":0},
-                    "notify": false
+                    "notify": false,
+                    "fulfilements":[]
                 },
 "unsubscribe-intent": {"training_phrases":["I don't want your services anymore", "Sign me off", "downgrade", "I want to unsubscribe", "ubsubscribe", "Sign off", "I don't want to pay anymore", "I do not need your services anymore", "Please remove my subscription", "Finish my subscription", "End Subsciption", "Finish Subscription"],
                         "responses": ["I have signed you off. Too bad, you are letting go of our services.",
@@ -45,7 +49,8 @@
                         "use_dynamo": false,
                         "input_context":"",
                         "output_context": {"context_label": "", "max_count":0},
-                        "notify": true
+                        "notify": true,
+                        "fulfilements":[]
                     },
 "tier-info":{"training_phrases": ["Tell me more about each tier","what are various levels of services you offer", "I want to know about the different service levels your offer",
                                     "Can you inform me about perks for each service level?", "what services you offer?", "Tiers", "Different Tiers", "Information about tiers",
@@ -56,7 +61,8 @@
             "use_dynamo": false,
             "input_context":"",
             "output_context": {"context_label": "", "max_count":0},
-            "notify": false
+            "notify": false,
+            "fulfilements":[]
         },
 "exit-intent": {"training_phrases": ["Bye", "Good Bye", "No thank you!", "End the chat", "No that's it"],
                 "responses": ["Thank you for using our service, Bye!", "I am grateful that you used our service. Take Care."],
@@ -65,7 +71,8 @@
                 "use_dynamo": false,
                 "input_context":"",
                 "output_context": {"context_label": "", "max_count":0},
-                "notify": false
+                "notify": false,
+                "fulfilements":[]
             },
 "no-match-intent": {"training_phrases": [],
                     "responses": ["I am sorry, I can only help you with managing your subscription or give information about our service tiers."],
@@ -74,7 +81,8 @@
                     "use_dynamo": false,
                     "input_context":"",
                     "output_context": {"context_label": "", "max_count":0},
-                        "notify": false
+                    "notify": false,
+                    "fulfilements":[]
                 }         
 
 }

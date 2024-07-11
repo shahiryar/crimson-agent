@@ -1,0 +1,19 @@
+{
+    "make_payment": {
+                    "display_name": "Make Payment", 
+                    "webhook": {
+                                "url": "http://127.0.0.1:8000/send_money",
+                                "template_payload": "{\"sender\": \"$name\", \"receiver\": \"cloudera\", \"amount\":15}",
+                                "request_type": "POST"
+                            },
+                    "description": "Make payment for the description"
+                },
+    "check_balance": {
+                    "display_name": "Check Balance", 
+                    "webhook": {
+                                "url": "http://127.0.0.1:8000/check_balance/$name",
+                                "request_type": "GET"
+                            },
+                    "description": "Make payment for the description"
+                }
+}

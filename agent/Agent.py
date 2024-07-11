@@ -3,10 +3,10 @@ import json
 from utils import *
 from string import Template
 from nlp import dynamo
-from integrations import Whatsapp
+from integrations import Whatsapp, Webhook
 
 class Agent:
-    def __init__(self, intent_classifier, sentiment_analyser, intents_path="./intents.json", entities_path= "./entities.json", agent_config_path="./agent-config.json" ):
+    def __init__(self, intent_classifier, sentiment_analyser, intents_path="./intents.json", entities_path= "./entities.json", agent_config_path="./agent-config.json" , fulfilments_path = "./fulfilments.json"):
         self.active_intent = None
         self.active_intent_confidence_score = 1.0
         self.active_context = {"__context__": get_blank_context()}
@@ -23,6 +23,10 @@ class Agent:
         self.use_dynamo = False
         self.whatsappClient = None
         self.whatsappIntegrated = False
+
+        self.fulfilment_path = fulfilments_path
+        self.fulfilments = {}
+        self.load_integrations()
         #self.agent_name
         #self.agent_uid
 
@@ -130,6 +134,10 @@ class Agent:
             print(self.active_intent, ": Notification : " ,self.intents[self.active_intent]["notify"])
             if self.whatsappIntegrated and self.intents[self.active_intent]["notify"]:
                 self.send_whatsapp_message(agent_reply)
+            
+            for fulfilment in self.intents[self.active_intent]['fulfilements']:
+                webhook = self.fulfilments[fulfilment] #self.fulfilments contain a dictionary of webhooks
+                webhook.call(self.active_context)
 
             self.active_intent = None
             return agent_reply
@@ -192,6 +200,16 @@ class Agent:
         else:
             print("Whatsapp not integrated")
             return False
+        
+    def load_integrations(self):
+        with open(self.fulfilment_path) as file:
+            fulfilments = file.read()
+            fulfilments = json.loads(fulfilments)
+        
+        for fulfilment in fulfilments:
+            self.fulfilments[fulfilment] = Webhook(fulfilment, self.fulfilment_path)
+            ## Make sure that the params required in the intents file for an intent match the entities needed for the fulfilment in the fulfilments file
+        
 
 
 

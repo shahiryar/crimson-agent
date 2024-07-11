@@ -17,6 +17,13 @@ def create_agent():
 
 agent = create_agent()
 
+from integrations import Webhook
+
+check_balance = Webhook("check_balance")
+data = {
+    "name": "Shahiryar",
+}
+
 
 
 @app.route("/sms", methods=['GET', 'POST'])
@@ -30,6 +37,12 @@ def sms_reply():
 
     print(request.values)
     agent_reply = agent.process_input(incoming_msg)
+
+    
+    #TODO: Remove this: this is only a temporary fix
+    if "balance" in incoming_msg:
+        agent_reply["reply"] = f"Your Balance is {check_balance.call(data)}"
+
     agent_reply = agent_reply["reply"]
 
     
