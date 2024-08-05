@@ -6,7 +6,7 @@
                                 "template_payload": "{\"sender\": \"$name\", \"receiver\": \"cloudera\", \"amount\":15}",
                                 "request_type": "POST"
                             },
-                    "description": "Make payment for the description"
+                    "description": "Make payment"
                 },
     "check_balance": {
                     "display_name": "Check Balance", 
@@ -14,6 +14,6 @@
                                 "url": "http://127.0.0.1:8000/check_balance/$name",
                                 "request_type": "GET"
                             },
-                    "description": "Make payment for the description"
+                    "description": "Check Balance"
                 }
 }
