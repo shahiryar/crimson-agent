@@ -5,8 +5,31 @@ import re
 
 
 class Webhook:
+    """
+    Represents a webhook integration.
+
+    This class handles making HTTP requests to external webhooks based on defined configurations.
+    It supports both POST and GET requests with templated payloads and URLs.
+
+    Attributes:
+        name (str): The name of the webhook.
+        display_name (str): The user-friendly display name of the webhook.
+        description (str): A brief description of the webhook's purpose.
+        url (str): The URL of the webhook endpoint.
+        request_type (str): The HTTP request type (POST or GET).
+        template_payload (str): A template string for the POST request payload.
+        payload_data_needed (list): A list of variable names required for the template payload.
+        template_payload (Template): A Template object for the POST request payload.
+    """
 
     def __init__(self, name:str, fulfilments_path:str="./fulfilments.json"):
+        """
+        Initializes the Webhook object.
+
+        Args:
+            name (str): The name of the webhook.
+            fulfilments_path (str): The path to the JSON file containing webhook configurations.
+        """
         self.name = name
         with open(fulfilments_path) as file:
             fulfilments = file.read()
@@ -33,14 +56,10 @@ class Webhook:
         Extracts variable names from a template payload within a dictionary.
 
         Args:
-            data (dict): The dictionary containing the `template_payload` key.
+            tmp_str (str): The template string containing variable placeholders.
 
         Returns:
             list: A list of variable names found within the template payload.
-
-        Raises:
-            TypeError: If the input data is not a dictionary.
-            KeyError: If the 'template_payload' key is not found in the dictionary.
         """
 
         variable_pattern = r"\$(?P<variable_name>\w+)"  # Improved pattern for word characters
@@ -49,6 +68,15 @@ class Webhook:
         return variables
 
     def call(self, data_dict):
+        """
+        Makes the HTTP request to the webhook endpoint.
+
+        Args:
+            data_dict (dict): A dictionary containing data to be used for template substitution.
+
+        Returns:
+            tuple: A tuple containing the HTTP status code and the response data.
+        """
         # Make the HTTP request
         if self.request_type == "POST":
             # Substitute placeholders in the template with data from data_dict
@@ -67,6 +95,3 @@ class Webhook:
                 return response.json()["balance"]
             except:
                 return 400, {'error': 'could not send the request'}
-
-
-

@@ -18,6 +18,30 @@ from transformers.keras_callbacks import PushToHubCallback
 
 # Function to load and prepare intent data
 def load_intent_data(intents_file_path, entities_file_path):
+    """
+    Loads intent and entity data from JSON files and prepares it for training.
+
+    Args:
+        intents_file_path (str): Path to the JSON file containing intents data.
+        entities_file_path (str): Path to the JSON file containing entities data.
+
+    Returns:
+        tuple: A tuple containing the dataset, id2label mapping, and label2id mapping.
+
+    Example usage:
+        >>> dataset, id2label, label2id = load_intent_data("./intents.json", "./entities.json")
+
+    Steps:
+        1. Loads intents and entities data from the specified JSON files.
+        2. Filters intents based on the "trainable" flag.
+        3. Creates a Pandas DataFrame with "text" and "label" columns.
+        4. Converts labels to numerical IDs using label2id mapping.
+        5. Creates a Hugging Face Dataset from the DataFrame.
+
+    Notes:
+        - The intents file should be a valid JSON containing training phrases and labels.
+        - Entities file is currently not utilized but is loaded for potential future use.
+    """
     sys.path.insert(1, '../')  # Adjust path as needed
     load_dotenv()
     with open(intents_file_path, 'r') as intents_file:
@@ -44,6 +68,23 @@ def load_intent_data(intents_file_path, entities_file_path):
 
 # Function to preprocess the dataset
 def preprocess_dataset(dataset, tokenizer_name):
+    """
+    Preprocesses the dataset using the specified tokenizer.
+
+    Args:
+        dataset (Dataset): The Hugging Face Dataset to preprocess.
+        tokenizer_name (str): Name of the pre-trained tokenizer to use (e.g., 'distilbert-base-uncased').
+
+    Returns:
+        tuple: A tuple containing the preprocessed dataset and the tokenizer.
+
+    Example usage:
+        >>> preprocessed_dataset, tokenizer = preprocess_dataset(dataset, "distilbert-base-uncased")
+
+    Steps:
+        1. Loads the tokenizer from the specified name.
+        2. Applies tokenization and truncation to the dataset.
+    """
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     def preprocess_function(examples):
         return tokenizer(examples["text"], truncation=True)
@@ -51,6 +92,19 @@ def preprocess_dataset(dataset, tokenizer_name):
 
 # Function to compute evaluation metrics
 def compute_metrics(eval_pred):
+    """
+    Computes accuracy metric for model evaluation.
+
+    Args:
+        eval_pred (tuple): A tuple containing predictions and labels.
+
+    Returns:
+        dict: A dictionary containing the accuracy score.
+
+    Example usage:
+        >>> metrics = compute_metrics(eval_pred)
+        >>> print(metrics)
+    """
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)
     accuracy = evaluate.load("accuracy")
@@ -143,6 +197,22 @@ def train_classification_model(hf_token,intents_file_path, entities_file_path, t
 
 import json
 def save_agent_config(repo,model_name,intents_path, entities_path,local_model_path=""):
+    """
+    Saves the agent configuration to a JSON file.
+
+    Args:
+        repo (str): The Hugging Face repository name.
+        model_name (str): The model name.
+        intents_path (str): The path to the intents file.
+        entities_path (str): The path to the entities file.
+        local_model_path (str, optional): The path to the local model directory. Defaults to "".
+
+    Returns:
+        None
+
+    Example usage:
+        >>> save_agent_config("your-repo-name", "your-model-name", "./intents.json", "./entities.json", "./model_output")
+    """
     with open("../artefacts/agent-config.json", 'w') as config_file:
         data = {
             "hf_repo_name": repo,

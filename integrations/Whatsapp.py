@@ -3,6 +3,20 @@ import os
 from dotenv import load_dotenv
 
 class Whatsapp:
+    """
+    Represents a WhatsApp integration using Twilio API.
+
+    This class provides methods for sending messages to a specified receiver using Twilio's WhatsApp API.
+    It requires Twilio account SID and auth token to be set in environment variables.
+
+    Attributes:
+        sender_number (str): The sender's WhatsApp number in international format (e.g., '+14155238886').
+        receiver_number (str): The receiver's WhatsApp number in international format (e.g., '+923364050797').
+        account_sid (str): Twilio account SID from environment variable.
+        auth_token (str): Twilio auth token from environment variable.
+        twilioClient (Client): Twilio client object for making API requests.
+    """
+
     def __init__(self, sender_number, receiver_number):
         """
         Initializes the Whatsapp class with sender and receiver numbers.
@@ -13,18 +27,20 @@ class Whatsapp:
         """
         self.sender_number = sender_number
         self.receiver_number = receiver_number
-        self.load_credentials()
-        self.create_twilio_client()
+        self.load_credentials()  # Load Twilio credentials from environment variables
+        self.create_twilio_client()  # Create Twilio client object
 
     def load_credentials(self):
         """
         Loads Twilio account SID and auth token from environment variables.
-        Returns True if successful, False otherwise.
+
+        Returns:
+            bool: True if successful, False otherwise.
         """
-        if load_dotenv():
+        if load_dotenv():  # Load environment variables from .env file
             try:
-                self.account_sid = os.getenv("TWILLIO_ACCOUNT_SID")
-                self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+                self.account_sid = os.getenv("TWILLIO_ACCOUNT_SID")  # Get account SID from environment
+                self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")  # Get auth token from environment
                 return True
             except:
                 print("Twillio account or auth token not found in the environment")
@@ -59,12 +75,12 @@ class Whatsapp:
         Returns:
             bool: True if the message was sent successfully, False otherwise.
         """
-        if self.twilioClient:
+        if self.twilioClient:  # Check if Twilio client is available
             client = self.twilioClient
             message = client.messages.create(
-                from_=f'whatsapp:{self.sender_number}',
-                body=text,
-                to=f'whatsapp:{self.receiver_number}'
+                from_=f'whatsapp:{self.sender_number}',  # Sender's WhatsApp number
+                body=text,  # Message content
+                to=f'whatsapp:{self.receiver_number}'  # Receiver's WhatsApp number
             )
             if message:
                 return True
@@ -75,8 +91,14 @@ class Whatsapp:
             return False
     
     def create_twilio_client(self):
+        """
+        Creates a Twilio client object using account SID and auth token.
+
+        Returns:
+            bool: True if client creation was successful, False otherwise.
+        """
         if self.account_sid and self.auth_token:
-            client = Client(self.account_sid, self.auth_token)
+            client = Client(self.account_sid, self.auth_token)  # Create Twilio client
             self.twilioClient = client
             return True
         else:
@@ -84,6 +106,12 @@ class Whatsapp:
             return False
         
     def get_twilio_client(self):
+        """
+        Returns the Twilio client object.
+
+        Returns:
+            Client: The Twilio client object.
+        """
       return self.twilioClient
 
     def receive_message(self):
